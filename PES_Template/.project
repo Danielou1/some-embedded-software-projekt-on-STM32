@@ -30,7 +30,13 @@
 		<link>
 			<name>modules</name>
 			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/modules</locationURI>
+			<locationURI>copy_PARENT/modules</locationURI>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>copy_PARENT</name>
+			<value>$%7BPARENT-3-PROJECT_LOC%7D/git/workspace-test</value>
+		</variable>
+	</variableList>
 </projectDescription>
