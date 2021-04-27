@@ -9,7 +9,7 @@
 */
 
 
-#include "lcd.h"
+#include <lcd/lcd.h>
 #include "stm32f4xx.h"
 
 
