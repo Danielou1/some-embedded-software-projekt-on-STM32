@@ -132,8 +132,6 @@
                                     <listOptionValue builtIn="false" value="&quot;${ProjDirPath}/CMSIS/core&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${ProjDirPath}/CMSIS/device&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${ProjDirPath}/modules&quot;"/>
                                     								
                                 </option>
                                 								
