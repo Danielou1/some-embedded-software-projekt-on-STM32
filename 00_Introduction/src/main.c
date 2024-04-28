@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    	main.c
-  * @author		Danielou Mounsande...
+  * @author		Danielou Mounsanden & Danielle Ndjensi
   * @version 	V1.0
   * @date		18.04.2024
   * @brief  	Template using the LCD
