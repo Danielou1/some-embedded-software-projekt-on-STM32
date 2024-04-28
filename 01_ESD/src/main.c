@@ -1,31 +1,43 @@
 /**
   ******************************************************************************
   * @file    	main.c
-  * @author		Florian von Zabiensky
+  * @author		Danielou Mounsande
   * @version 	V1.0
-  * @date		14.03.2019
-  * @brief  	Template using the LCD
+  * @date       25.04.2024
   ******************************************************************************
 */
 
-
 #include <lcd/lcd.h>
 #include "stm32f4xx.h"
-
-
-int main(void)
-{
+#include "esd/esd.h"
+#include "delay_utils/delay_utils.h"
+int main(void) {
 	HAL_Init();
 
-	/* Initialization of the LCD */
-	lcd_init();
+	esd_init();
 
-	/* Draw text to LCD */
-	lcd_draw_text_at_line("   Hello World!", 4, BLACK, 2, WHITE);
-	lcd_draw_text_at_line("    Welcome to", 6, BLACK, 2, WHITE);
-	lcd_draw_text_at_line("       PES", 7, BLACK, 2, WHITE);
+	esd_digit_t digitArray[10] = { ESD_DIGIT_0, ESD_DIGIT_1, ESD_DIGIT_2,
+			ESD_DIGIT_3, ESD_DIGIT_4, ESD_DIGIT_5, ESD_DIGIT_6, ESD_DIGIT_7,
+			ESD_DIGIT_8, ESD_DIGIT_9 };
+	esd_position_t positionArray[5] = { ESD_POSITION_1, ESD_POSITION_2,
+			ESD_POSITION_3, ESD_POSITION_4, ESD_POSITION_ALL };
+	int digitCounter = 9;
+	int posCounter = 0;
 
-	while(1) {
+	while (1) {
+
+		esd_show_digit(digitArray[digitCounter], positionArray[posCounter]);
+		utils_delay_ms(1000);
+		digitCounter--;
+		if(digitCounter < 0){
+			posCounter++;
+			digitCounter = 9;
+		}
+		if(posCounter == 5) posCounter = 0;
 
 	}
 }
+
+
+
+
