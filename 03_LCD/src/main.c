@@ -2,10 +2,10 @@
  /**
  ******************************************************************************
  * @file    	main.c
- * @author		Danielou Mounsande & Danielle Djenzi
+ * @author		Danielou Mounsande & Danielle Ndjensi
  * @version 	V1.0
- * @date		28.10.2022
- * @brief  	LCD
+ * @date		25.04.2024
+ * @brief  		Verwendung des LCD-Bildschirms für die schrittweise Anzeige von Zahlen
  ******************************************************************************
  */
 
@@ -18,22 +18,26 @@
 
 
 int main(void) {
+	//Hardware initialization
 	HAL_Init();
 
+	// Initialisierung des LCD-Displays
 	lcd_init();
 
+	// Puffer für die Textanzeige auf dem LCD-Display
 	char buf[64];
-	int Count = 10;
+	int count = 10;
 	while (1) {
+		// Schleife zur Erstellung der Balkengraphen
 
 		/**for (uint16_t zahl = 1000; zahl >= 10; zahl -= 100) {
-			sprintf(buf, " %4d", Count);
-			Count--;
+			sprintf(buf, " %4d", count);
+			count--;
 			my_lcd_draw_bargraph(0, 0, 240, 100, zahl, BLACK, BLUE);
-			lcd_draw_text_at_line(buf, 6, BLACK, 4, YELLOW);
+			lcd_draw_text_at_line(buf, 5, BLACK, 4, YELLOW);
 			HAL_Delay(1000);
 		}
-		Count = 10;*/
+		count = 10;*/
 
 		draw_kreuz();
 	}
