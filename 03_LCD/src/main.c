@@ -16,12 +16,17 @@
 #include <stdio.h>
 #include <math.h>
 
+/**
+ * @brief  Hauptfunktion, die die Logik für die Anzeige der Nummern 1 bis 10 auf dem LCD enthält.
+ * @param  None
+ * @return Null bei Erfolg und jeder andere Wert im Fehlerfall
+ */
 
 int main(void) {
-	//Hardware initialization
+	/*Hardware initialization*/
 	HAL_Init();
 
-	// Initialisierung des LCD-Displays
+	/*Initialisierung des LCD-Displays*/
 	lcd_init();
 
 	// Puffer für die Textanzeige auf dem LCD-Display
