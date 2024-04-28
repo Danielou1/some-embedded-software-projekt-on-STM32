@@ -4,15 +4,19 @@
   * @author		Danielou Mounsanden & Danielle Ndjensi
   * @version 	V1.0
   * @date		18.04.2024
-  * @brief  	Template using the LCD
+  * @brief  	Vorlage mit dem LCD
   ******************************************************************************
 */
 
-
+/* Includes */
 #include <lcd/lcd.h>
 #include "stm32f4xx.h"
 
-
+/**
+ * @brief  Hauptfunktion, die die Konfiguration und Steuerung der LEDs durchführt.
+ * @param  None
+ * @retval Null bei Erfolg
+ */
 
 int main(void)
 {
