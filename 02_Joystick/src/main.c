@@ -15,6 +15,12 @@
 #include "delay_utils/delay_utils.h"
 #include "joystick/joystick.h"
 
+/**
+ * @brief  Hauptfunktion, die die Logik für die Anzeige auf dem 8-Segment-Display und die Steuerung über den Joystick enthält.
+ * @param  None
+ * @return Null bei Erfolg und jeder andere Wert im Fehlerfall
+ */
+
 int main(void) {
 
 	//Hardware initialization
