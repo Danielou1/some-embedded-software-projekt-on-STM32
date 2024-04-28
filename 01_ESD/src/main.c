@@ -7,16 +7,22 @@
   ******************************************************************************
 */
 
+/* Includes */
 #include <lcd/lcd.h>
 #include "stm32f4xx.h"
 #include "esd/esd.h"
 #include "delay_utils/delay_utils.h"
 
-/* Includes */
+/**
+ * @brief Hauptfunktion, die die Logik für die Anzeige auf dem ESD enthält.
+ * @param None
+ * @return Null bei Erfolg und jeder andere Wert im Fehlerfall
+ */
+
 int main(void) {
-	//Hardware initialization
+	/*Hardware initialization*/
 	HAL_Init();
-	// Initialisierung des 8-Segment-Displays
+	/*Initialisierung des 8-Segment-Displays*/
 	esd_init();
 
 	// Arrays für die Darstellung der Ziffern und Positionen
