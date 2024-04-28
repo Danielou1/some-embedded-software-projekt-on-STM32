@@ -22,11 +22,9 @@ void draw_kreuz() {
 	        lcd_draw_pixel(centerX, centerY - 50 + i, BLACK); // Vertical
 	        lcd_draw_pixel(centerX - 50 + i, centerY, BLACK); // Horizontal
 
-	        // Dessin de la diagonale de haut à gauche à bas à droite
-	        lcd_draw_pixel(centerX - 50 + i, centerY - 50 + i, BLACK);
 
-	        // Dessin de la diagonale de haut à droite à bas à gauche
-	        lcd_draw_pixel(centerX + 50 - i, centerY - 50 + i, BLACK);
+	        //lcd_draw_pixel(centerX - 50 + i, centerY - 50 + i, BLACK); //diagonal
+	        //lcd_draw_pixel(centerX + 50 - i, centerY - 50 + i, BLACK); //diagonal
 
 	        HAL_Delay(150);
 	    }
