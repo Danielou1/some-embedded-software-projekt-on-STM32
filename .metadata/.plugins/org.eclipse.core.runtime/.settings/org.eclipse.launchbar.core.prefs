@@ -1,0 +1,9 @@
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86_64
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name=Local
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=win32
+configDescList=org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:00_Introduction,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:01_ESD Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:02_Joystick Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:03_LCD Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:04_Potis,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:05_Potis_DMA Debug
+eclipse.preferences.version=1
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:00_Introduction/activeLaunchMode=run
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:00_Introduction/activeLaunchTarget=null\:---
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:04_Potis/activeLaunchMode=run
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:05_Potis_DMA\ Debug/activeLaunchMode=run

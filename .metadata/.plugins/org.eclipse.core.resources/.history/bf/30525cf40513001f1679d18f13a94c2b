@@ -1,0 +1,41 @@
+/*
+ * @file main.c
+ * @author:
+ * @brief The sampled values and the average values from the potentiometer will be printed with a bargraph
+ */
+
+ /* Includes */
+#include <stdio.h>
+#include <lcd/lcd.h>
+#include "my_lcd/my_lcd.h"
+#include "potis_dma/potis_dma.h"
+#include "stm32f4xx.h"
+
+int main(void) {
+
+	//Initialization
+	HAL_Init();
+	lcd_init();
+	potis_dma_Init();
+
+	//LCD buffers
+	char buf_potis_1[64];
+	char buf_potis_2[64];
+
+	while (1) {
+
+		//Print sampled value on LCD
+		//sprintf(buf_potis_1, "Potis DMA 1: %4lu", potis_dma_get_millivolt_val(POTIS_1)); -- Frage 3
+		sprintf(buf_potis_1, "Potis DMA1 Av: %4lu", potis_dma_get_val_average_millivolt(1));
+		lcd_draw_text_at_line(buf_potis_1, 1, BLACK, 2, WHITE);
+
+		//sprintf(buf_potis_2, "Potis DMA 2: %4lu", potis_dma_get_millivolt_val(POTIS_2)); -- Frage 3
+		sprintf(buf_potis_2, "Potis DMA2 Av: %4lu", potis_dma_get_val_average_millivolt(2));
+		lcd_draw_text_at_line(buf_potis_2, 10, BLACK, 2, WHITE);
+
+		//Draw Bargraph for potis_1 and potis_2
+		my_lcd_draw_bargraph(0, 50, 240, 50, potis_dma_get_val_average(1)/4, RED, BLACK);
+		my_lcd_draw_bargraph(0, 200, 240, 50, potis_dma_get_val_average(2)/4, BLUE, BLACK);
+
+	}
+}

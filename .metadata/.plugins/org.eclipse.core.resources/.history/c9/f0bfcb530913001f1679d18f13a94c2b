@@ -1,0 +1,36 @@
+/**
+ ******************************************************************************
+ * @file    	potis.h
+ * @author		Danielou Mounsande & Danielle Ndjensi
+ * @version 	V1.0
+ * @date		25.04.2024
+ * @brief
+ ******************************************************************************
+ */
+
+#ifndef POTIS_H_POTIS_H_
+#define POTIS_H_POTIS_H_
+
+/* Includes */
+#include "stm32f4xx.h"
+
+/* Public Preprocessor defines */
+//Defines for our PINS and PORT
+#define ADC_2 GPIO_PIN_6
+#define ADC_1 GPIO_PIN_7
+
+#define POTIS1 ADC_1
+#define POTIS2 ADC_2
+
+#define POTIS_PORT GPIOA
+
+void potis_Init(void);
+void potis_start_ADC1();
+
+uint32_t potis_get_val(uint8_t poti_num);
+uint32_t potis_get_millivolt_val(uint8_t poti_num);
+uint32_t potis_dma_get_val_average(uint8_t poti_num);
+uint32_t potis_dma_get_val_average_millivolt(uint8_t poti_num);
+
+
+#endif

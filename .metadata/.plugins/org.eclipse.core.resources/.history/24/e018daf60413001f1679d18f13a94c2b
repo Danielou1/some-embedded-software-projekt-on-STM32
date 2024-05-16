@@ -1,0 +1,33 @@
+/*
+ * @file potis_dma.h
+ * @author:
+ * @brief Potis_DMA Headerfile for Potentiometers working with DMA
+ */
+#ifndef POTIS_DMA_POTIS_DMA_H_
+#define POTIS_DMA_POTIS_DMA_H_
+
+/* Includes */
+#include "stm32f4xx.h"
+//Defines for our PINS and PORT
+#define ADC_1 GPIO_PIN_7
+#define ADC_2 GPIO_PIN_6
+
+#define POTIS1 ADC_1
+#define POTIS2 ADC_2
+
+#define POTIS_PORT GPIOA
+
+void potis_dma_Init(void);
+
+uint32_t potis_dma_get_value(uint8_t poti_num);
+
+uint32_t potis_dma_get_millivolt_val(uint8_t poti_num);
+
+uint32_t potis_dma_get_val_average(uint8_t poti_num);
+
+uint32_t potis_dma_get_val_average_millivolt(uint8_t poti_num);
+extern DMA_HandleTypeDef DMA_handle_structure;
+extern uint16_t samples[2];
+
+
+#endif /* POTIS_DMA_POTIS_DMA_H_ */

@@ -1,0 +1,38 @@
+/*
+ * @file main.c
+ * @author:
+ * @brief The sampled values will be printed with a bargraph
+ */
+
+ /* Includes */
+#include <stdio.h>
+#include <lcd/lcd.h>
+#include "my_lcd/my_lcd.h"
+#include "stm32f4xx.h"
+#include "potis/potis.h"
+
+int main(void) {
+
+	//Initialization
+	HAL_Init();
+	lcd_init();
+	potis_Init();
+
+	//LCD buffers
+	char buf_pot1[32];
+	char buf_pot2[32];
+
+	while (1) {
+
+		//Print sampled value on LCD
+		sprintf(buf_pot1, "Potis 1: %4lu", potis_get_millivolt_val(1));
+		lcd_draw_text_at_line(buf_pot1, 1, BLACK, 2, WHITE);
+
+		sprintf(buf_pot2, "Potis 2: %4lu", potis_get_millivolt_val(2));
+		lcd_draw_text_at_line(buf_pot2, 10, BLACK, 2, WHITE);
+
+		//Draw Bargraph for potis_1 and potis_2
+		my_lcd_draw_bargraph(0, 50, 240, 50, potis_get_val(1) / 4, BLACK, BLUE);
+		my_lcd_draw_bargraph(0, 200, 240, 50, potis_get_val(2) / 4, BLUE,BLACK);
+	}
+}
