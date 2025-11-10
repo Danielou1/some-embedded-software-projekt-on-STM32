@@ -15,38 +15,28 @@
 #include "stm32f4xx.h"
 
 /* public Defines */
-#define CNTL_PORT GPIOD
-#define LED_A_F_PORT GPIOD
-#define POINT_DOT_G_PORT GPIOE
 
-#define CNTL1 GPIO_PIN_14
-#define CNTL2 GPIO_PIN_15
-#define CNTL3 GPIO_PIN_0
-#define CNTL4 GPIO_PIN_1
-#define LED_A GPIO_PIN_7
-#define LED_B GPIO_PIN_4
-#define LED_C GPIO_PIN_5
-#define LED_D GPIO_PIN_6
-#define LED_E GPIO_PIN_12
-#define LED_F GPIO_PIN_11
+/* Data types */
+typedef struct {
+	GPIO_TypeDef* port;
+	uint16_t pin;
+} ESD_Pin_t;
 
-#define LED_G GPIO_PIN_12 //PORT E
-#define POINT GPIO_PIN_7 // PORT E
-#define DOT GPIO_PIN_11 // PORT E
-
-#define ALL_CNTL (CNTL1 | CNTL2 | CNTL3 | CNTL4)
-
-#define DIGIT_0 (LED_G)
-#define DIGIT_1 (LED_A | LED_D | LED_E | LED_F)
-#define DIGIT_2 (LED_C | LED_F)
-#define DIGIT_3 (LED_E | LED_F)
-#define DIGIT_4 (LED_A | LED_D | LED_E)
-#define DIGIT_5 (LED_B |LED_E)
-#define DIGIT_6 (LED_B)
-#define DIGIT_7 (LED_D | LED_E | LED_F)
-#define DIGIT_9 (LED_E)
-
-#define ALLE_LEDS_OHNE_G (LED_A | LED_B | LED_C | LED_D | LED_E | LED_F)
+typedef struct {
+	ESD_Pin_t cntl1;
+	ESD_Pin_t cntl2;
+	ESD_Pin_t cntl3;
+	ESD_Pin_t cntl4;
+	ESD_Pin_t led_a;
+	ESD_Pin_t led_b;
+	ESD_Pin_t led_c;
+	ESD_Pin_t led_d;
+	ESD_Pin_t led_e;
+	ESD_Pin_t led_f;
+	ESD_Pin_t led_g;
+	ESD_Pin_t point;
+	ESD_Pin_t dot;
+} ESD_Config_t;
 
 /* Enums */
 typedef enum {
@@ -71,7 +61,7 @@ typedef enum {
 } esd_position_t;
 
 /* Public functions (prototypes) */
-void esd_init(void);
+void esd_init(ESD_Config_t* config);
 void esd_show_digit(esd_digit_t digit, esd_position_t pos);
 
 #endif /* ESD_ESD_H_ */
