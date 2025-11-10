@@ -15,21 +15,22 @@
 #include "stm32f4xx.h"
 
 
-/* --- Public Preprocessor defines */
+/* --- Public Datatypes */
 
-/* Mapping of joystick gpio-port and -pins. */
-#define	JOYSTICK_PORT		GPIOG
-#define JOYSTICK_PIN_RIGHT 	GPIO_PIN_10
-#define JOYSTICK_PIN_DOWN	GPIO_PIN_6
-#define JOYSTICK_PIN_LEFT 	GPIO_PIN_9
-#define JOYSTICK_PIN_UP 	GPIO_PIN_11
-#define JOYSTICK_PIN_SELECT GPIO_PIN_12
-#define JOYSTICK_PIN_ALL	(JOYSTICK_PIN_RIGHT | JOYSTICK_PIN_DOWN | JOYSTICK_PIN_LEFT | JOYSTICK_PIN_UP | JOYSTICK_PIN_SELECT )
+/* Struct for the joystick configuration */
+typedef struct {
+	GPIO_TypeDef* port;
+	uint16_t pin_right;
+	uint16_t pin_down;
+	uint16_t pin_left;
+	uint16_t pin_up;
+	uint16_t pin_select;
+} Joystick_Config_t;
 
 
 /* --- Public functions (prototypes) */
 
-void joystick_init(void);
+void joystick_init(Joystick_Config_t* config);
 uint16_t joystick_read(void);
 
 
