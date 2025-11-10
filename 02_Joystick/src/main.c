@@ -2,18 +2,17 @@
  ******************************************************************************
  * @file    	main.c
  * @author      Danielou Mounsande & Danielle Ndjensi
- * @version 	V1.0
- * @date        24.04.2024
- * @brief		Vorlage mit dem 8BIT SEG und dem Joystick
+ * @version 	V2.0
+ * @date        10.11.2025
+ * @brief		Vorlage mit dem 8BIT SEG und dem Joystick (non-blocking)
  ******************************************************************************
  */
 
 /* Includes */
-#include <lcd/lcd.h>
 #include "stm32f4xx.h"
 #include "esd/esd.h"
-#include "delay_utils/delay_utils.h"
 #include "joystick/joystick.h"
+#include "timer_utils/timer_utils.h"
 
 // Configuration for the 7-segment display
 ESD_Config_t esd_config = {
@@ -77,63 +76,69 @@ void Joystick_GPIO_Init( void ) {
 }
 
 
-/**
- * @brief  Hauptfunktion, die die Logik für die Anzeige auf dem 8-Segment-Display und die Steuerung über den Joystick enthält.
- * @param  None
- * @return Null bei Erfolg und jeder andere Wert im Fehlerfall
- */
-
 int main(void) {
 
-	//Hardware initialization
+	// Hardware initialization
 	HAL_Init();
 	ESD_GPIO_Init();
 	Joystick_GPIO_Init();
+	timer_utils_init(); // Initialize our non-blocking timer
 
-	// Initialisierung des 8-Segment-Displays und des Joysticks
+	// Module initialization
 	esd_init(&esd_config);
 	joystick_init(&joystick_config);
 
-	// Initialisierung der Position und des Digits (Zahl) für die Anzeige
+	// Application variables
 	esd_position_t pos = 0;
 	esd_digit_t digit = 0;
+	uint8_t countdown_active = 0; // 0 = false, 1 = true
 
+	// Time-keeping variables for non-blocking logic
+	uint32_t last_joystick_read = 0;
+	uint32_t last_countdown_tick = 0;
 
 	while (1) {
-		uint16_t state = joystick_read();
+		uint32_t current_ticks = timer_utils_get_ticks();
 
-		// Überprüfen, ob die Joystick-Richtungstasten gedrückt werden
+		// --- Handle Countdown Logic (every 1000ms if active) ---
+		if (countdown_active && (current_ticks - last_countdown_tick >= 1000)) {
+			if (digit > 0) {
+				digit--;
+			} else {
+				countdown_active = 0; // Countdown finished
+			}
+			last_countdown_tick = current_ticks;
+		}
 
-		// Joystick UP: Erhöhe das Digit (Zahl) um 1
-		if (state & joystick_config.pin_up) {
-			digit = (digit + 1) % (10);
+		// --- Handle Input (every 50ms to debounce and prevent rapid fire) ---
+		if (!countdown_active && (current_ticks - last_joystick_read >= 200)) {
+			uint16_t state = joystick_read();
 
-		// Joystick DOWN: Verringere das Digit (Zahl) um 1
-		} else if (state & joystick_config.pin_down) {
-			digit = (digit + 9) % (10);
-
-		// Joystick LEFT: Ändere die Anzeigeposition nach links
-		} else if (state & joystick_config.pin_left) {
-			pos = (pos + 4) % (5);
-
-		// Joystick RIGHT: Ändere die Anzeigeposition nach rechts
-		} else if (state & joystick_config.pin_right) {
-			pos = (pos + 1) % (5);
-
-			// Joystick SELECT: Starte den Countdown von der aktuellen Zahl
-		} else if (state & joystick_config.pin_select) {
-
-			for (int temp = digit; temp >= 0; temp--) {
-				esd_show_digit(temp, pos);
-				utils_delay_ms(1000);
-				digit = temp;
-
+			if (state & joystick_config.pin_up) {
+				digit = (digit + 1) % 10;
+				last_joystick_read = current_ticks;
+			} else if (state & joystick_config.pin_down) {
+				digit = (digit + 9) % 10;
+				last_joystick_read = current_ticks;
+			} else if (state & joystick_config.pin_left) {
+				pos = (pos + 4) % 5;
+				last_joystick_read = current_ticks;
+			} else if (state & joystick_config.pin_right) {
+				pos = (pos + 1) % 5;
+				last_joystick_read = current_ticks;
+			} else if (state & joystick_config.pin_select) {
+				countdown_active = 1;
+				last_countdown_tick = current_ticks;
+				last_joystick_read = current_ticks;
 			}
 		}
 
-		// Zeige das aktuelle Digit (Zahl) an der aktuellen Position auf dem Display
+		// --- Handle Display Update (runs continuously) ---
+		// This needs to be fast for multiplexing, so we don't delay it.
+		// To display a number like "12", you would rapidly call:
+		// esd_show_digit(1, ESD_POSITION_1);
+		// esd_show_digit(2, ESD_POSITION_2);
+		// For this simple example, we just show the same digit everywhere.
 		esd_show_digit(digit, pos);
-		// Kurze Verzögerung
-		utils_delay_ms(200);
 	}
 }

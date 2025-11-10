@@ -2,16 +2,15 @@
   ******************************************************************************
   * @file    	main.c
   * @author		Danielou Mounsande & Danielle Ndjensi
-  * @version 	V1.0
-  * @date       25.04.2024
+  * @version 	V2.0
+  * @date        10.11.2025
   ******************************************************************************
 */
 
 /* Includes */
-#include <lcd/lcd.h>
 #include "stm32f4xx.h"
 #include "esd/esd.h"
-#include "delay_utils/delay_utils.h"
+#include "timer_utils/timer_utils.h"
 
 // Create the configuration struct with the original pin values
 ESD_Config_t esd_config = {
@@ -65,6 +64,7 @@ int main(void) {
 	/*Hardware initialization*/
 	HAL_Init();
 	ESD_GPIO_Init();
+	timer_utils_init(); // Initialize our non-blocking timer
 
 	/*Initialisierung des 8-Segment-Displays*/
 	esd_init(&esd_config);
@@ -80,18 +80,22 @@ int main(void) {
 	int digitCounter = 9;
 	int posCounter = 0;
 
+	uint32_t last_update = 0;
+
 	while (1) {
-		// Ziffer und Position anzeigen
-		esd_show_digit(digitArray[digitCounter], positionArray[posCounter]);
-		utils_delay_ms(1000);
-		digitCounter--;
+		if (timer_utils_get_ticks() - last_update >= 1000) {
+			// Ziffer und Position anzeigen
+			esd_show_digit(digitArray[digitCounter], positionArray[posCounter]);
+			digitCounter--;
 
-		// Überprüfen, ob der Zähler für die Ziffer unter 0 ist
-		if(digitCounter < 0){
-			posCounter++;
-			digitCounter = 9;
+			// Überprüfen, ob der Zähler für die Ziffer unter 0 ist
+			if(digitCounter < 0){
+				posCounter++;
+				digitCounter = 9;
+			}
+			if(posCounter == 5) posCounter = 0;
+
+			last_update = timer_utils_get_ticks();
 		}
-		if(posCounter == 5) posCounter = 0;
-
 	}
 }
