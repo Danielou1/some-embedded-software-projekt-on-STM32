@@ -1,24 +1,33 @@
 /**
  ******************************************************************************
- * @file    	utils.h
- * 	@author		Danielou Mounsande
- * @version 	V1.0
- * @date		02.11.2022
- * @brief  	Module for using the periphery GPIO
+ * @file    	timer_utils.h
+ * @author		Danielou Mounsande
+ * @version 	V2.0
+ * @date		10.11.2025
+ * @brief  	    Module for a non-blocking ms tick counter using a hardware timer.
  ******************************************************************************
  */
 
-/* Public Preprocessor defines */
-#ifndef UTILS_UTILS_H_
-#define UTILS_UTILS_H_
+#ifndef TIMER_UTILS_TIMER_UTILS_H_
+#define TIMER_UTILS_TIMER_UTILS_H_
 
  /* Includes */
 #include "stm32f4xx.h"
 
+/* Public variables */
+extern TIM_HandleTypeDef htim6;
+
 /* Public functions (prototypes) */
-void utils_delay_ms(uint32_t t);
-void utils_gpio_port_write(GPIO_TypeDef *GPIOx, uint16_t GPIO_PIN);
-uint16_t utils_gpio_port_read(GPIO_TypeDef *GPIOx);
 
-#endif /* UTILS_UTILS_H_ */
+/**
+ * @brief Initializes the hardware timer (TIM6) to generate a 1ms tick.
+ */
+void timer_utils_init(void);
 
+/**
+ * @brief  Gets the current value of the millisecond tick counter.
+ * @return The number of milliseconds elapsed since timer_utils_init was called.
+ */
+uint32_t timer_utils_get_ticks(void);
+
+#endif /* TIMER_UTILS_TIMER_UTILS_H_ */

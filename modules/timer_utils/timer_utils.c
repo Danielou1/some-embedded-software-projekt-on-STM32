@@ -1,56 +1,66 @@
 /**
- **********************************************************************************************************
- * @file    	delay_utils.c
- * 	@author		Mounsande Danielou & Danielle Ndjensi
- * @version 	V1.0
- * @date
- * @brief Module for using the periphery GPIO
-@verbatim
- **********************************************************************************************************
- ==================================================
-  ### Resources used ###
-  GPIO
-  ODR
-  IDR
-==================================================
-  ### Usage ###
-  (#) Call 'utils_delay_ms()' to delay the program execution for a certain amount of milliseconds
-  (#) Call 'utils_gpio_port_write()' to write a value to the specified GPIO port
-  (#) Call 'utils_gpio_port_read()' to read the current value of the specified GPIO port
-==================================================
-@endverbatim
-**************************************************
+ ******************************************************************************
+ * @file    	timer_utils.c
+ * @author		Danielou Mounsande
+ * @version 	V2.0
+ * @date		10.11.2025
+ * @brief  	    Module for a non-blocking ms tick counter using TIM6.
+ ******************************************************************************
  */
 
-#include "delay_utils/delay_utils.h"
+#include "timer_utils/timer_utils.h"
+
+/* --- Global variables --- */
+TIM_HandleTypeDef htim6;
+static volatile uint32_t g_ticks = 0;
+
+
+/* --- Public functions --- */
 
 /**
-* @brief Delays the program execution for a certain amount of milliseconds
-* @param t: The amount of time to delay in milliseconds
-* @return None
-*/
-void utils_delay_ms(uint32_t t) {
-	HAL_Delay(t);
+ * @brief Initializes the hardware timer (TIM6) to generate a 1ms tick.
+ */
+void timer_utils_init(void) {
+    // Enable TIM6 clock
+    __HAL_RCC_TIM6_CLK_ENABLE();
+
+    // Configure TIM6 for a 1ms update event
+    // Assuming APB1 Timer Clock is 90MHz (for STM32F429 at 180MHz HCLK)
+    // Prescaler = 90, so TIM6 clock is 90MHz / 90 = 1MHz (1us period)
+    // Period (ARR) = 1000, so update event is every 1000 * 1us = 1ms
+    htim6.Instance = TIM6;
+    htim6.Init.Prescaler = 90 - 1;
+    htim6.Init.Period = 1000 - 1;
+    HAL_TIM_Base_Init(&htim6);
+
+    // Enable the TIM6 interrupt in the NVIC
+    HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
+
+    // Start the timer in interrupt mode
+    HAL_TIM_Base_Start_IT(&htim6);
 }
 
 /**
-* @brief Writes a value to the specified GPIO port
-* @param GPIOx: The GPIO port to write to
-* @param GPIO_PIN: The value to write to the port
-* @return None
-*/
-void utils_gpio_port_write(GPIO_TypeDef *GPIOx, uint16_t GPIO_PIN) {
-
-	GPIOx->ODR = 0 | GPIO_PIN; // reset the  ODR and Initialize
+ * @brief  Gets the current value of the millisecond tick counter.
+ * @return The number of milliseconds elapsed since timer_utils_init was called.
+ */
+uint32_t timer_utils_get_ticks(void) {
+    return g_ticks;
 }
+
+
+/* --- Interrupt Handlers and Callbacks --- */
 
 /**
-* @brief Reads the current value of the specified GPIO port
-* @param GPIOx: The GPIO port to read from
-* @return The current value of the port
-*/
-uint16_t utils_gpio_port_read(GPIO_TypeDef *GPIOx) {
-
-	return GPIOx->IDR;
+  * @brief  Period elapsed callback in non-blocking mode.
+  * @note   This function is called automatically by the HAL library's ISR handler.
+  * @param  htim: TIM handle
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance == TIM6)
+  {
+    g_ticks++;
+  }
 }
-
