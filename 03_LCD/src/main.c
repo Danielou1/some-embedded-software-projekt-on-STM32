@@ -2,8 +2,8 @@
  ******************************************************************************
  * @file    main.c
  * @author  Danielou Mounsande
- * @version V3.2
- * @date    12-November-2025
+ * @version V3.2  --> V1 april 2024
+ * @date    last update on 12-November-2025
  * @brief   Main program for the 03_LCD project.
  *
  * @note    This project demonstrates a non-blocking animation on the LCD screen.
@@ -44,6 +44,7 @@ int main(void) {
 	/* Hardware and module initialization */
 	HAL_Init();
 	SystemClock_Config(); // Configure the system clock
+	SystemCoreClockUpdate(); // Update the SystemCoreClock variable
 	my_lcd_init();      // Initialize the custom LCD module
 	timer_utils_init(); // Initialize the non-blocking timer
 

@@ -1,5 +1,15 @@
 # Eclipse IDE specific
 .metadata/
+.project
+.settings/
+*.launch
+
+# Build artifacts
+Debug/
+Release/
+
+# Project-specific module copies
+*/modules/
 
 # Documentation folder
 doku/
