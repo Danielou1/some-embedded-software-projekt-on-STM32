@@ -3,7 +3,7 @@
  * @file    main.c
  * @author  Danielou Mounsande
  * @version V1.1
- * @date    12-November-2025
+ * @date    last update 12-November-2025
  * @brief   Main program for the 04_Potis project.
  *
  * @note    This project demonstrates reading potentiometer values using the ADC
@@ -79,7 +79,7 @@ int main(void)
         poti1_mv = adc_to_millivolts(poti1_val); // Convert raw ADC value to millivolts
 
         // Display Potentiometer 1 bargraph. The value is scaled to 0-1000 for the bargraph function.
-        my_lcd_draw_baargraph(0, 30, 240, 20, (poti1_val * 1000U) / 4095U, BLUE, LIGHTGREY);
+        my_lcd_draw_bargraph(0, 30, 240, 20, (poti1_val * 1000U) / 4095U, BLUE, LIGHTGREY);
         // Display Potentiometer 1 textual value in millivolts
         sprintf(buf, "%4lu mV", poti1_mv);
         my_lcd_draw_text_at_line(buf, 3, BLACK, 2, WHITE);
@@ -90,7 +90,7 @@ int main(void)
         poti2_mv = adc_to_millivolts(poti2_val); // Convert raw ADC value to millivolts
 
         // Display Potentiometer 2 bargraph.
-        my_lcd_draw_baargraph(0, 150, 240, 20, (poti2_val * 1000U) / 4095U, RED, LIGHTGREY);
+        my_lcd_draw_bargraph(0, 150, 240, 20, (poti2_val * 1000U) / 4095U, RED, LIGHTGREY);
         // Display Potentiometer 2 textual value in millivolts
         sprintf(buf, "%4lu mV", poti2_mv);
         my_lcd_draw_text_at_line(buf, 8, BLACK, 2, WHITE);

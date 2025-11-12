@@ -1,18 +1,50 @@
 /**
-  ******************************************************************************
-  * @file    	main.c
-  * @author		Danielou Mounsande & Danielle Ndjensi
-  * @version 	V2.0
-  * @date        10.11.2025
-  ******************************************************************************
-*/
+ ******************************************************************************
+ * @file    main.c
+ * @author  Danielou Mounsande
+ * @version V3.1
+ * @date    12-November-2025
+ * @brief   Main program for the 01_ESD project.
+ *
+ * @note    This project drives a 4-digit 7-segment display (ESD Board)
+ *          to show a countdown from 9 to 0 on each position, one after
+ *          the other. It uses a non-blocking timer for updates.
+ *          This `main.c` serves as a usage example for the `esd` and `timer_utils` modules.
+ *
+ * @section WIRING Wiring Instructions
+ * Connect the "8-SEG-LED-Board" to the microcontroller via the 2x10
+ * pin connector (Header 10x2) as follows:
+ *
+ * | Display Pin Name    | Header Pin | STM32 Pin |
+ * |:-------------------:|:----------:|:---------:|
+ * | VCC3V3              | 1, 2       | +3.3V     |
+ * | GND                 | 3, 4       | GND       |
+ * | CNTL1 (Digit 1)     | 5          | PD14      |
+ * | a (Segment a)       | 6          | PD7       |
+ * | CNTL2 (Digit 2)     | 7          | PD15      |
+ * | b (Segment b)       | 8          | PD4       |
+ * | CNTL3 (Digit 3)     | 9          | PD0       |
+ * | c (Segment c)       | 10         | PD5       |
+ * | CNTL4 (Digit 4)     | 11         | PD1       |
+ * | d (Segment d)       | 12         | PD6       |
+ * | point (Decimal Pt.) | 13         | PE7       |
+ * | e (Segment e)       | 14         | PD12      |
+ * | f (Segment f)       | 16         | PD11      |
+ * | g (Segment g)       | 17         | PE12      |
+ * | dot (Colon)         | 19         | PE11      |
+ *
+ ******************************************************************************
+ */
 
-/* Includes */
+/* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
 #include "esd/esd.h"
 #include "timer_utils/timer_utils.h"
 
-// Create the configuration struct with the original pin values
+/* Pin Configuration ---------------------------------------------------------*/
+
+// Defines the mapping between the hardware and the esd module.
+// This structure will be passed to the module so it knows which pins to drive.
 ESD_Config_t esd_config = {
     .cntl1 = { .port = GPIOD, .pin = GPIO_PIN_14 },
     .cntl2 = { .port = GPIOD, .pin = GPIO_PIN_15 },
@@ -29,73 +61,52 @@ ESD_Config_t esd_config = {
     .dot   = { .port = GPIOE, .pin = GPIO_PIN_11 }
 };
 
-/**
- * @brief Initializes the GPIO pins for the 7-segment display.
- */
-void ESD_GPIO_Init(void) {
-    // Enable clock for GPIO ports D and E
-    __HAL_RCC_GPIOD_CLK_ENABLE();
-    __HAL_RCC_GPIOE_CLK_ENABLE();
-
-    GPIO_InitTypeDef gpio_init;
-    gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
-    gpio_init.Pull = GPIO_NOPULL;
-    gpio_init.Speed = GPIO_SPEED_MEDIUM;
-
-    // Initialize GPIOD pins
-    gpio_init.Pin = esd_config.cntl1.pin | esd_config.cntl2.pin | esd_config.cntl3.pin | esd_config.cntl4.pin |
-                    esd_config.led_a.pin | esd_config.led_b.pin | esd_config.led_c.pin | esd_config.led_d.pin |
-                    esd_config.led_e.pin | esd_config.led_f.pin;
-    HAL_GPIO_Init(GPIOD, &gpio_init);
-
-    // Initialize GPIOE pins
-    gpio_init.Pin = esd_config.led_g.pin | esd_config.point.pin | esd_config.dot.pin;
-    HAL_GPIO_Init(GPIOE, &gpio_init);
-}
-
+/* Main Program --------------------------------------------------------------*/
 
 /**
- * @brief Hauptfunktion, die die Logik für die Anzeige auf dem ESD enthält.
- * @param None
- * @return Null bei Erfolg und jeder andere Wert im Fehlerfall
+ * @brief  Application entry point.
+ * @retval int
  */
-
 int main(void) {
-	/*Hardware initialization*/
-	HAL_Init();
-	ESD_GPIO_Init();
-	timer_utils_init(); // Initialize our non-blocking timer
+    /* Hardware and module initialization */
+    HAL_Init();
+    timer_utils_init();     // Initialize the non-blocking timer
+    esd_init(&esd_config);  // Initialize the display module (now manages its own GPIOs)
 
-	/*Initialisierung des 8-Segment-Displays*/
-	esd_init(&esd_config);
+    /* Data preparation for the display */
+    esd_digit_t digitArray[10] = {
+        ESD_DIGIT_0, ESD_DIGIT_1, ESD_DIGIT_2, ESD_DIGIT_3, ESD_DIGIT_4,
+        ESD_DIGIT_5, ESD_DIGIT_6, ESD_DIGIT_7, ESD_DIGIT_8, ESD_DIGIT_9
+    };
+    esd_position_t positionArray[4] = {
+        ESD_POSITION_1, ESD_POSITION_2, ESD_POSITION_3, ESD_POSITION_4
+    };
 
-	// Arrays für die Darstellung der Ziffern und Positionen
-	esd_digit_t digitArray[10] = { ESD_DIGIT_0, ESD_DIGIT_1, ESD_DIGIT_2,
-			ESD_DIGIT_3, ESD_DIGIT_4, ESD_DIGIT_5, ESD_DIGIT_6, ESD_DIGIT_7,
-			ESD_DIGIT_8, ESD_DIGIT_9 };
-	esd_position_t positionArray[5] = { ESD_POSITION_1, ESD_POSITION_2,
-			ESD_POSITION_3, ESD_POSITION_4, ESD_POSITION_ALL };
+    /* Application logic variables */
+    int digitCounter = 9;
+    int posCounter = 0;
+    uint32_t last_update = 0;
 
-	// Zähler für die Auswahl der Ziffer und Position
-	int digitCounter = 9;
-	int posCounter = 0;
+    /* Infinite loop */
+    while (1) {
+        // Use a non-blocking timer to execute this code every 1000ms (1s)
+        if (timer_utils_get_ticks() - last_update >= 1000) {
+            // Display the current digit at the current position
+            esd_show_digit(digitArray[digitCounter], positionArray[posCounter]);
 
-	uint32_t last_update = 0;
+            // Countdown logic
+            digitCounter--;
+            if (digitCounter < 0) {
+                digitCounter = 9; // Reset the digit
+                posCounter++;     // Move to the next position
+                if (posCounter >= 4) {
+                    posCounter = 0; // Wrap around to the first position
+                }
+            }
 
-	while (1) {
-		if (timer_utils_get_ticks() - last_update >= 1000) {
-			// Ziffer und Position anzeigen
-			esd_show_digit(digitArray[digitCounter], positionArray[posCounter]);
-			digitCounter--;
-
-			// Überprüfen, ob der Zähler für die Ziffer unter 0 ist
-			if(digitCounter < 0){
-				posCounter++;
-				digitCounter = 9;
-			}
-			if(posCounter == 5) posCounter = 0;
-
-			last_update = timer_utils_get_ticks();
-		}
-	}
+            // Update the time of the last display update
+            last_update = timer_utils_get_ticks();
+        }
+        // The CPU is free here to do other tasks between display updates.
+    }
 }

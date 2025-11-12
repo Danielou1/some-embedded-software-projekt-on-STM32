@@ -1,52 +1,76 @@
 /**
-  ******************************************************************************
-  * @file    	Joystick.c
-  * @author		Danielou Mounsande
-  * @version 	V1.0
-  * @date		30.04.2021
-  * @brief  	Module for using the on-board joystick of the waveshare-board.
-  @verbatim
-  ==============================================================================
-                     ##### Usage: #####
-    (#) Create a 'Joystick_Config_t' struct and fill it with the GPIO port and pins.
-    (#) Initialize the corresponding GPIO pins as inputs with pull-up resistors in your main application.
-    (#) Call 'joystick_init()' with your config struct to initialize the module.
-    (#) Call 'joystick_read()' to read input from joystick.
-    (#) Detect active bits by bitwise-compare result to the pin definitions in your config struct.
-  ==============================================================================
-  @endverbatim
-  ******************************************************************************
-*/
+ ******************************************************************************
+ * @file    joystick.c
+ * @author  Danielou Mounsande
+ * @version V2.1
+ * @date    12-November-2025
+ * @brief   Implementation file for the joystick driver module
+ *          for the Waveshare board's joystick.
+ ******************************************************************************
+ */
 
-/* --- Includes */
-#include "Joystick/Joystick.h"
+/* Includes ------------------------------------------------------------------*/
+#include "joystick/joystick.h"
 
-/* --- Static module variables */
+/* Private Variables ---------------------------------------------------------*/
+
+/** @brief Local copy of the joystick's pin configuration. */
 static Joystick_Config_t g_joystick_config;
 
+/* Private function prototypes -----------------------------------------------*/
+static void Joystick_GPIO_Init(void);
 
-/* --- Public functions */
+/* Public function implementations -------------------------------------------*/
 
-	/**
-	  * @brief  Initializes the joystick module by storing the pin configuration.
-	  * @param  config: A pointer to the Joystick_Config_t struct with the pinout.
-	  * @retval None
-	  */
-	void joystick_init(Joystick_Config_t* config) {
-		g_joystick_config = *config;
-	}
+/**
+ * @brief  Initializes the joystick module by storing the pin configuration
+ *         and configuring the corresponding GPIOs.
+ * @param  config: A pointer to the Joystick_Config_t struct with the pinout.
+ * @retval None
+ */
+void joystick_init(Joystick_Config_t* config) {
+    // 1. Store the pin configuration locally
+    g_joystick_config = *config;
 
-	/**
-	  * @brief  Reads the io-pins of the joystick.
-	  * @param  None
-	  * @retval One or more of the bits defined in the config struct
-	  *  are set when an associated button is pressed.
-	  *
-	  * @note	Original Joystick-Buttons are low active and therefore the result here is inverted by the '~'-operator to get a high-active result!
-	  */
-	uint16_t joystick_read(void) {
-		uint16_t pins_all = g_joystick_config.pin_right | g_joystick_config.pin_down | g_joystick_config.pin_left | g_joystick_config.pin_up | g_joystick_config.pin_select;
-		return pins_all & (~g_joystick_config.port->IDR); /* invert and return input-data-register of the port  */
-	}
+    // 2. Initialize the joystick's GPIO pins
+    Joystick_GPIO_Init();
+}
 
-/* ---  End: Joystick.c */
+/**
+ * @brief  Reads the state of the joystick's input pins.
+ * @param  None
+ * @retval uint16_t: A bitmask where one or more bits defined in the config
+ *         struct are set to '1' if the associated button is pressed.
+ * @note   The joystick buttons are "low-active". The result is inverted
+ *         by the '~' operator to get a "high-active" result.
+ */
+uint16_t joystick_read(void) {
+    uint16_t pins_all = g_joystick_config.pin_right | g_joystick_config.pin_down |
+                        g_joystick_config.pin_left | g_joystick_config.pin_up |
+                        g_joystick_config.pin_select;
+
+    // Invert the state of the input data register (IDR) to get a high-active result
+    return pins_all & (~g_joystick_config.port->IDR);
+}
+
+/* Private function implementations ------------------------------------------*/
+
+/**
+ * @brief  Configures the GPIO pins for the joystick port.
+ * @note   This function is called by joystick_init(). It is based on the
+ *         configuration stored in g_joystick_config.
+ * @retval None
+ */
+static void Joystick_GPIO_Init(void) {
+    // Enable the clock for the GPIO port used by the joystick
+    __HAL_RCC_GPIOG_CLK_ENABLE(); // The joystick is on port G
+
+    GPIO_InitTypeDef gpio_init_joy = { 0 };
+    gpio_init_joy.Pin = g_joystick_config.pin_right | g_joystick_config.pin_down |
+                        g_joystick_config.pin_left | g_joystick_config.pin_up |
+                        g_joystick_config.pin_select;
+    gpio_init_joy.Mode = GPIO_MODE_INPUT;   // Pins configured as input
+    gpio_init_joy.Pull = GPIO_PULLUP;       // Pull-up resistors enabled (for low-active buttons)
+
+    HAL_GPIO_Init(g_joystick_config.port, &gpio_init_joy);
+}

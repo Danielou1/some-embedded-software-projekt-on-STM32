@@ -1,68 +1,112 @@
 /**
-  ******************************************************************************
-  * @file    	main.c
-  * @author		Danielou Mounsanden & Danielle Ndjensi
-  * @version 	V1.0
-  * @date		18.04.2024
-  * @brief  	Vorlage mit dem LCD
-  ******************************************************************************
-*/
-
-/* Includes */
-#include <lcd/lcd.h>
-#include "stm32f4xx.h"
-
-/**
- * @brief  Hauptfunktion, die die Konfiguration und Steuerung der LEDs durchführt.
- * @param  None
- * @retval Null bei Erfolg
+ ******************************************************************************
+ * @file    main.c
+ * @author  Danielou Mounsande
+ * @version V2.1
+ * @date    12-November-2025
+ * @brief   Main program for the 00_Introduction project.
+ *
+ * @note    This project is a basic example that blinks the two user LEDs
+ *          (green and red) present on the STM32F429I-DISC1 board.
+ *          It demonstrates the basic initialization and control of GPIO pins.
+ *
+ * @section WIRING Wiring Instructions
+ * The hardware used is internal to the development board and requires
+ * no external wiring.
+ * - **Green LED:** Connected to pin PG13.
+ * - **Red LED:**   Connected to pin PG14.
+ ******************************************************************************
  */
 
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f4xx.h"
+
+/* Private function prototypes -----------------------------------------------*/
+static void SystemClock_Config(void);
+static void GPIO_Init(void);
+
+/* Main program --------------------------------------------------------------*/
+
+/**
+ * @brief  Application entry point.
+ * @retval int
+ */
 int main(void)
 {
-	HAL_Init();
+    /* MCU Configuration--------------------------------------------------------*/
 
-	/* Initialization of the LCD */
-	lcd_init();
+    // Initialize the Hardware Abstraction Layer (HAL)
+    HAL_Init();
 
-    /* 1- Wie oben erläutert, ist die grüne LED an PG13 angeschlossen. An welchen Pin ist die rote LED des
-Discovery Boards angeschlossen? : PG14 */
+    // Configure the system clock
+    SystemClock_Config();
 
-    /* 2-  Konfigurieren Sie die GPIO-Ports für den Betrieb beider LEDs.*/
+    // Initialize the GPIO pins for the LEDs
+    GPIO_Init();
 
-	__HAL_RCC_GPIOG_CLK_ENABLE();
-    GPIO_InitTypeDef gpio_init;
-    		gpio_init.Pin = GPIO_PIN_14 | GPIO_PIN_13;
-    		gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
-    		gpio_init.Pull = GPIO_NOPULL;
-    		gpio_init.Speed = GPIO_SPEED_MEDIUM;
-    		HAL_GPIO_Init(GPIOG, &gpio_init);
+    /* Infinite loop -----------------------------------------------------------*/
+    while (1)
+    {
+        // Toggle the state of both LEDs (green and red)
+        HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_13 | GPIO_PIN_14);
 
-    /* 3- Aktivieren Sie nun die grüne LED. */
+        // Wait for 500 milliseconds
+        HAL_Delay(500);
+    }
+}
 
-    	//HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
+/**
+ * @brief  Configures the GPIO pins for the LEDs.
+ * @note   Enables the clock for GPIOG port and configures pins
+ *         PG13 and PG14 in output push-pull mode.
+ * @retval None
+ */
+static void GPIO_Init(void)
+{
+    GPIO_InitTypeDef gpio_init_struct;
 
-    /* 4- Aktivieren Sie mithilfe eines einzigen Funktionsaufrufs beide LEDs. */
+    // Enable the clock for the GPIOG port
+    __HAL_RCC_GPIOG_CLK_ENABLE();
 
-   		//HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13 | GPIO_PIN_14, GPIO_PIN_SET);
+    // Configure the LED pins
+    gpio_init_struct.Pin = GPIO_PIN_13 | GPIO_PIN_14;
+    gpio_init_struct.Mode = GPIO_MODE_OUTPUT_PP; // Push-Pull output mode
+    gpio_init_struct.Pull = GPIO_NOPULL;
+    gpio_init_struct.Speed = GPIO_SPEED_FREQ_LOW;
 
-   	/* 5- Aktivieren Sie beide LEDs und deaktivieren Sie anschließend die rote LED wieder. */
+    // Apply the configuration to the GPIOG port
+    HAL_GPIO_Init(GPIOG, &gpio_init_struct);
+}
 
-          //HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13 | GPIO_PIN_14, GPIO_PIN_SET);
-          //HAL_Delay(1500);
-   		  //HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_RESET);
+/**
+ * @brief  System Clock Configuration.
+ * @note   This function is a basic configuration and might be more
+ *         complex in real-world applications.
+ * @retval None
+ */
+static void SystemClock_Config(void)
+{
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  	/* 6- Deaktivieren Sie mit nur einem Funktionsaufruf beide LEDs. */
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-    	  //HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13 | GPIO_PIN_14, GPIO_PIN_RESET);
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 8;
+    RCC_OscInitStruct.PLL.PLLN = 336;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ = 7;
+    HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-    /* 7- Aktivieren Sie die grüne LED und togglen Sie daraufhin beide LEDs mit der Toggle
-    			 Funktion. Rufen Sie diesen Befehl mehrmals auf, um den Effekt zu sehen. */
-
-	while(1) {
-	    		HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_13 | GPIO_PIN_14);
-	    	    HAL_Delay(1500);
-
-
-	}
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
 }

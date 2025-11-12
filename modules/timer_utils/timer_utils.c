@@ -25,11 +25,11 @@ void timer_utils_init(void) {
     __HAL_RCC_TIM6_CLK_ENABLE();
 
     // Configure TIM6 for a 1ms update event
-    // Assuming APB1 Timer Clock is 90MHz (for STM32F429 at 180MHz HCLK)
-    // Prescaler = 90, so TIM6 clock is 90MHz / 90 = 1MHz (1us period)
+    // HCLK is 168MHz, APB1 Prescaler is 4, so APB1 Timer Clock is (168/4)*2 = 84MHz.
+    // Prescaler = 84, so TIM6 clock is 84MHz / 84 = 1MHz (1us period)
     // Period (ARR) = 1000, so update event is every 1000 * 1us = 1ms
     htim6.Instance = TIM6;
-    htim6.Init.Prescaler = 90 - 1;
+    htim6.Init.Prescaler = 84 - 1;
     htim6.Init.Period = 1000 - 1;
     HAL_TIM_Base_Init(&htim6);
 
