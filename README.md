@@ -6,7 +6,9 @@
 
 ## Introduction
 
-This repository is a curated collection of embedded systems projects developed on the **STM32F429** platform. It documents the process of refactoring and enhancing foundational university projects with advanced, industry-standard software engineering practices. The primary objective is to demonstrate a deep understanding of both low-level hardware interaction and high-level software architecture, showcasing a commitment to writing clean, robust, and maintainable embedded code.
+This repository is a curated collection of embedded systems projects developed on the **STM32F429** platform. It documents the process of refactoring and enhancing foundational university and personal projects—some of which are more than two years old—with advanced, industry-standard software engineering practices. This repository serves as a living document of skill progression and the application of modern embedded principles to older codebases.
+
+The primary objective is to demonstrate a deep understanding of both low-level hardware interaction and high-level software architecture, showcasing a commitment to writing clean, robust, and maintainable embedded code.
 
 ## Core Philosophy & Best Practices
 
