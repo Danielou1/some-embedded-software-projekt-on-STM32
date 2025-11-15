@@ -30,4 +30,11 @@ void timer_utils_init(void);
  */
 uint32_t timer_utils_get_ticks(void);
 
+/**
+ * @brief  Handles the timer tick event.
+ * @note   This function must be called from the HAL_TIM_PeriodElapsedCallback
+ *         when the interrupt is from the timer used by this module (TIM6).
+ */
+void timer_utils_handle_tick(void);
+
 #endif /* TIMER_UTILS_TIMER_UTILS_H_ */

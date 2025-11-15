@@ -43,7 +43,7 @@ void pwm_dimmer_init(PWM_Dimmer_Config_t* config, uint32_t frequency, float init
 
 	GPIO_InitTypeDef gpio_init = {0};
 	gpio_init.Pin = g_dimmer_config.gpio_pin;
-	gpio_init.Mode = GPIO_MODE_AF_PP;
+	gpio_init.Mode = g_dimmer_config.gpio_mode;
 	gpio_init.Pull = GPIO_NOPULL;
 	gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
 	gpio_init.Alternate = g_dimmer_config.gpio_af;

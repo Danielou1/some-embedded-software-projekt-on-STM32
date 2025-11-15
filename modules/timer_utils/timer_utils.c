@@ -53,14 +53,11 @@ uint32_t timer_utils_get_ticks(void) {
 /* --- Interrupt Handlers and Callbacks --- */
 
 /**
-  * @brief  Period elapsed callback in non-blocking mode.
-  * @note   This function is called automatically by the HAL library's ISR handler.
-  * @param  htim: TIM handle
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+ * @brief  Handles the timer tick event.
+ * @note   This function must be called from the HAL_TIM_PeriodElapsedCallback
+ *         when the interrupt is from the timer used by this module (TIM6).
+ */
+void timer_utils_handle_tick(void)
 {
-  if (htim->Instance == TIM6)
-  {
     g_ticks++;
-  }
 }

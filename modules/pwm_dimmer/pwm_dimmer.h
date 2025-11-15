@@ -28,6 +28,7 @@ typedef struct {
 	GPIO_TypeDef* gpio_port;    /*!< Pointer to the GPIO port for the output pin (e.g., GPIOE). */
 	uint16_t      gpio_pin;     /*!< The GPIO pin number (e.g., GPIO_PIN_11). */
 	uint8_t       gpio_af;      /*!< The alternate function mapping for the pin (e.g., GPIO_AF1_TIM1). */
+	uint32_t      gpio_mode;    /*!< The GPIO mode, e.g., GPIO_MODE_AF_PP or GPIO_MODE_AF_OD. */
 } PWM_Dimmer_Config_t;
 
 
