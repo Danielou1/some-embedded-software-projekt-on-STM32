@@ -13,3 +13,6 @@ Release/
 
 # Documentation folder
 doku/
+
+# External projects copied for inspection
+/Send_Data_Via_UART/
