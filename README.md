@@ -36,6 +36,8 @@ The following projects have been refactored to meet the standards outlined above
 | **`05_Potis_DMA`** | ADC with DMA | Advanced ADC reading using Direct Memory Access (DMA) for efficiency. |
 | **`06_Blinky_Dot`** | Hardware PWM Blink | Low-frequency signal generation (1Hz) using a hardware timer in PWM mode. |
 | **`07_Dimming_Dot`** | Real-Time PWM Control | ADC to PWM mapping, real-time user interaction, handling active-low hardware. |
+| **`08_Stopwatch`** | Lap Timer | External Interrupts (EXTI), timekeeping, state machines. |
+| **`P1_Fan_Control`** | PI Speed Controller | Closed-loop control (PI), PWM, tachometer reading, modular system design. |
 
 ### Key Modules Developed
 
@@ -45,18 +47,15 @@ The following projects have been refactored to meet the standards outlined above
 *   **`my_lcd`:** A wrapper for the base LCD driver to provide a consistent interface.
 *   **`timer_utils`:** A non-blocking millisecond timer using a hardware timer and interrupts.
 *   **`pwm_dimmer`:** A flexible, frequency-based PWM driver for controlling LEDs or other actuators.
+*   **`stopwatch`:** A high-precision lap timer using EXTI and a hardware timer.
+*   **`tacho_reader`:** A module to measure fan RPM using EXTI and a timer.
+*   **`pi_controller`:** A generic Proportional-Integral (PI) controller module with anti-windup.
 
 ---
 
 ## Roadmap & Future Work
 
-This repository is actively being developed. The next steps include:
-
-*   **`08_Stopwatch` - High-Precision Lap Timer:**
-    *   Develop a new `stopwatch` module from scratch.
-    *   Implement a high-precision timer (1/10,000s resolution) using advanced timer features.
-    *   Use external interrupts (EXTI) to handle input from the user button, simulating a lap trigger.
-    *   Design a clean user interface on the LCD to display total time and multiple lap times.
+This repository is actively being developed. The next steps include exploring more advanced topics:
 
 *   **Advanced Topic Exploration:**
     *   **RTOS Concepts:** Implement a simple task scheduler to manage multiple application components concurrently.
