@@ -38,6 +38,7 @@ The following projects have been refactored to meet the standards outlined above
 | **`07_Dimming_Dot`** | Real-Time PWM Control | ADC to PWM mapping, real-time user interaction, handling active-low hardware. |
 | **`08_Stopwatch`** | Lap Timer | External Interrupts (EXTI), timekeeping, state machines. |
 | **`P1_Fan_Control`** | PI Speed Controller | Closed-loop control (PI), PWM, tachometer reading, modular system design. |
+| **`P2_Weatherstation`** | CAN Bus Weather Node | I²C sensor integration (BME280), CAN bus setup and loopback testing, advanced debugging. |
 
 ### Key Modules Developed
 
@@ -50,17 +51,21 @@ The following projects have been refactored to meet the standards outlined above
 *   **`stopwatch`:** A high-precision lap timer using EXTI and a hardware timer.
 *   **`tacho_reader`:** A module to measure fan RPM using EXTI and a timer.
 *   **`pi_controller`:** A generic Proportional-Integral (PI) controller module with anti-windup.
+*   **`env_sensor`:** A driver for the BME280 environmental sensor using I²C, with Doxygen documentation.
+*   **`can_com`:** A module to handle initialization and communication over the CAN bus.
 
 ---
 
 ## Roadmap & Future Work
 
-This repository is actively being developed. The next steps include exploring more advanced topics:
+This repository is actively being developed. The next steps include:
 
-*   **Advanced Topic Exploration:**
-    *   **RTOS Concepts:** Implement a simple task scheduler to manage multiple application components concurrently.
-    *   **I²C Communication:** Integrate an external sensor (e.g., a temperature or pressure sensor) using the I²C protocol.
-    *   **Advanced ARM Cortex-M4 Features:** Explore and implement projects using the Memory Protection Unit (MPU) or the Floating Point Unit (FPU) for more complex applications.
+*   **CAN Bus Network:** Finalize the `P2_Weatherstation` project by implementing the full multi-node communication logic, including data serialization and reception from other nodes.
+*   **RTOS Concepts:** Implement a simple real-time operating system (RTOS) to manage multiple tasks concurrently in a more advanced project.
+*   **Advanced ARM Cortex-M4 Features:** Explore and implement projects using the Memory Protection Unit (MPU) or the Floating Point Unit (FPU).
+
+### Completed Milestones
+*   **I²C Communication:** Successfully integrated an external I²C sensor (BME280) and debugged hardware/software issues.
 
 ## Connect With Me
 
