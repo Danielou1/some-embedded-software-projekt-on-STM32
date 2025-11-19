@@ -15,6 +15,8 @@
 #include <cmsis_os.h>
 #endif
 #include "stm32f4xx_it.h"
+/* External variables --------------------------------------------------------*/
+extern CAN_HandleTypeDef hcan1;
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -39,4 +41,18 @@ void SysTick_Handler(void)
 #ifdef USE_RTOS_SYSTICK
 	osSystickHandler();
 #endif
+}
+
+/**
+  * @brief This function handles CAN1 RX0 interrupts.
+  */
+void CAN1_RX0_IRQHandler(void)
+{
+  /* USER CODE BEGIN CAN1_RX0_IRQn 0 */
+
+  /* USER CODE END CAN1_RX0_IRQn 0 */
+  HAL_CAN_IRQHandler(&hcan1);
+  /* USER CODE BEGIN CAN1_RX0_IRQn 1 */
+
+  /* USER CODE END CAN1_RX0_IRQn 1 */
 }

@@ -51,13 +51,13 @@ int8_t env_sensor_init(void)
         return -1; // Error
     }
 
-    // Configure Analogue filter (based on working example)
+    // Configure Analogue filter
     if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
     {
         return -1; // Error
     }
 
-    // Configure Digital filter (based on working example)
+    // Configure Digital filter
     if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
     {
         return -1; // Error
