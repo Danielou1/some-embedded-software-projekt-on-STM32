@@ -1,3 +1,18 @@
+/**
+ ******************************************************************************
+ * @file    main.c
+ * @author  Danielou Mounsande
+ * @version V1.0
+ * @date    25-November-2025
+ * @brief   Main program body for the P2 Weather Station project.
+ *
+ * @note    This project initializes the BME280 environmental sensor and the
+ *          CAN bus peripheral. It is intended to read sensor data and transmit
+ *          it over the CAN bus. A loopback test is included to verify the
+ *          basic functionality of the CAN communication.
+ ******************************************************************************
+ */
+
 #include "lcd/lcd.h"
 #include "stm32f4xx.h"
 #include "env_sensor/env_sensor.h"
@@ -5,15 +20,26 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-// Private function prototypes
+/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 
-// Global flag for our CAN loopback test
+/* Global variables ----------------------------------------------------------*/
+
+/**
+ * @brief Global flag to indicate the success of the CAN loopback test.
+ * @note  This flag is set to `true` within the CAN RX interrupt callback
+ *        when the specific test message (ID 0x123) is successfully received.
+ *        It is declared as `volatile` because it is modified in an ISR and
+ *        read in the main loop.
+ */
 volatile bool g_can_loopback_success = false;
 
 /**
-  * @brief  Rx Fifo 0 message pending callback in non blocking mode
-  * @param  hcan: pointer to a CAN_HandleTypeDef structure that contains
+  * @brief  Rx Fifo 0 message pending callback in non-blocking mode.
+  * @note   This function is called by the HAL library when a new message is
+  *         received in the CAN RX FIFO 0. In this project, it is used to
+  *         catch the message sent during the loopback test.
+  * @param  hcan: Pointer to a CAN_HandleTypeDef structure that contains
   *         the configuration information for the specified CAN.
   * @retval None
   */
@@ -22,32 +48,42 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     CAN_RxHeaderTypeDef rxHeader;
     uint8_t rxData[8];
 
-    // Get the message
+    // Get the received message
     if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, rxData) == HAL_OK)
     {
-        // Check if it's our test message (ID 0x123)
+        // Check if the received message is the one from our loopback test
         if (rxHeader.StdId == 0x123)
         {
             g_can_loopback_success = true;
         }
-        // Later, we will add logic here to process incoming sensor data
+        // Future enhancement: Add logic here to process incoming sensor data
+        // from other nodes on the CAN bus.
     }
 }
 
 
+/**
+  * @brief  The application's main entry point.
+  * @retval int
+  */
 int main(void)
 {
+	/* MCU Configuration--------------------------------------------------------*/
+
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
 
-    /* Configure the system clock */
+    /* Configure the system clock to 168 MHz */
     SystemClock_Config();
 
-	/* Initialization of the LCD */
+	/* Initialize all configured peripherals------------------------------------*/
+
+	/* 1. Initialize the LCD */
 	lcd_init();
 	lcd_fill_screen(WHITE);
 	lcd_draw_text_at_line("P2: Wetterstation", 2, BLACK, 2, WHITE);
 
-	/* Initialization of the BME280 Sensor */
+	/* 2. Initialize the BME280 Environmental Sensor */
 	if (env_sensor_init() != BME280_OK)
 	{
 		lcd_draw_text_at_line("BME280 Init Failed!", 4, RED, 2, WHITE);
@@ -58,7 +94,7 @@ int main(void)
 		lcd_draw_text_at_line("BME280 Initialized", 4, GREEN, 2, WHITE);
 	}
 
-	/* CAN Initialization */
+	/* 3. Initialize the CAN peripheral */
     int can_init_status = can_com_init();
 	if (can_init_status != 0)
 	{
@@ -72,17 +108,23 @@ int main(void)
 		lcd_draw_text_at_line("CAN Initialized", 6, GREEN, 2, WHITE);
 	}
 
-    /* Activate the CAN RX FIFO 0 message pending interrupt */
+    /* 4. Activate the CAN RX interrupt */
     if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
     {
         lcd_draw_text_at_line("CAN IRQ Activate Failed!", 6, RED, 2, WHITE);
         while(1);
     }
 
-    HAL_Delay(500);
+    HAL_Delay(500); // Wait for messages to settle on screen
 
+	/* Optional: CAN Loopback Test --------------------------------------------*/
 #if 0 // Set to 1 to re-enable the CAN loopback test, 0 for normal operation
-    /* --- Perform Loopback Test (Preserved for reference) --- */
+    /*
+     * This section performs a simple self-test of the CAN peripheral.
+     * A message is transmitted and, because the hardware is in loopback mode,
+     * it is immediately received by the same peripheral. The RX interrupt
+     * callback then sets a flag to confirm success.
+     */
     lcd_draw_text_at_line("Performing CAN Test...", 8, BLACK, 2, WHITE);
 
     CAN_TxHeaderTypeDef txHeader;
@@ -103,7 +145,7 @@ int main(void)
 
     HAL_Delay(100); // Wait a short moment for the loopback to complete
 
-    // Check the result
+    // Check the result flag set by the ISR
     if (g_can_loopback_success)
     {
         lcd_draw_text_at_line("CAN Loopback OK!", 10, GREEN, 2, WHITE);
@@ -115,19 +157,25 @@ int main(void)
 
 	while(1)
 	{
-		// Loop forever after the test
+		// Loop forever after the test to display the result
 	}
 #endif
 
-    // Clear init messages for normal operation
+    /* Clear initialization messages for normal operation */
     lcd_draw_rect(0, 4 * 16, 240, 12 * 16, WHITE, 1);
 
+	/* Infinite loop: Main application logic ---------------------------------*/
 	while(1)
 	{
-		// Final application logic will go here:
-        // 1. Read sensor data from BME280
-        // 2. Send sensor data via CAN every second
-        // 3. Update LCD with data from selected node (via joystick)
+		/*
+		 * The final application logic will be implemented here.
+		 * The intended behavior is:
+		 * 1. Read sensor data (temp, humidity, pressure) from the BME280.
+		 * 2. Pack the data into a CAN message.
+		 * 3. Send the CAN message every second.
+		 * 4. Listen for incoming CAN messages from other nodes.
+		 * 5. Use the joystick to select which node's data to display on the LCD.
+		 */
         HAL_Delay(1000);
 	}
 }

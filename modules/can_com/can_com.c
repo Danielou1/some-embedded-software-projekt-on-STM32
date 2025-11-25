@@ -15,9 +15,6 @@ CAN_HandleTypeDef hcan1;
 
 /* Public Function Implementations -------------------------------------------*/
 
-/**
- * @brief Initializes the CAN1 peripheral and configures it for Loopback Mode.
- */
 int can_com_init(void)
 {
     // De-initialize the CAN peripheral first to reset it completely.
@@ -39,6 +36,7 @@ int can_com_init(void)
     hcan1.Init.ReceiveFifoLocked = DISABLE;
     hcan1.Init.TransmitFifoPriority = DISABLE;
 
+    // This calls HAL_CAN_MspInit()
     if (HAL_CAN_Init(&hcan1) != HAL_OK)
     {
         return -1; // Initialization failed
@@ -76,11 +74,11 @@ int can_com_init(void)
 
 
 /**
-  * @brief CAN MSP Initialization
-  *        This function configures the hardware resources:
-  *           - Peripheral's clock enable
-  *           - Peripheral's GPIO Configuration
-  * @param hcan: CAN handle pointer
+  * @brief  CAN MSP (MCU Support Package) Initialization.
+  * @note   This function is called by HAL_CAN_Init() to perform the low-level
+  *         hardware configuration. It enables clocks, configures GPIO pins,
+  *         and sets up the NVIC for CAN interrupts.
+  * @param  hcan: CAN handle pointer.
   * @retval None
   */
 void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
@@ -110,8 +108,11 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
 }
 
 /**
-  * @brief CAN MSP De-Initialization
-  * @param hcan: CAN handle pointer
+  * @brief  CAN MSP (MCU Support Package) De-Initialization.
+  * @note   This function is called by HAL_CAN_DeInit() to perform the low-level
+  *         hardware de-configuration. It disables clocks and de-initializes
+  *         the GPIO pins used by the CAN peripheral.
+  * @param  hcan: CAN handle pointer.
   * @retval None
   */
 void HAL_CAN_MspDeInit(CAN_HandleTypeDef* hcan)

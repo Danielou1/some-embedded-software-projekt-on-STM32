@@ -16,11 +16,22 @@
 extern CAN_HandleTypeDef hcan1;
 
 /**
- * @brief Initializes the CAN1 peripheral and configures filters.
- * @note  This function configures GPIOs PA11 and PA12 for CAN1, sets the
- *        baud rate to 125 kBit/s, configures the necessary filters to
- *        receive weather data, and starts the CAN peripheral.
- * @retval 0 on success, -1 on failure.
+ * @brief  Initializes the CAN1 peripheral for communication.
+ * @note   This function performs a full initialization of the CAN1 peripheral.
+ *         It configures the following:
+ *         - **GPIO Pins**: PB8 (CAN1_RX) and PB9 (CAN1_TX).
+ *         - **Mode**: The CAN controller is set to @c CAN_MODE_LOOPBACK for self-testing without an external transceiver.
+ *         - **Baud Rate**: The communication speed is set to 125 kBit/s, assuming a 42 MHz APB1 clock.
+ *         - **Filter**: A default filter is configured to accept all standard CAN messages (Filter Bank 0).
+ *
+ *         The function also handles de-initialization, low-level MSP initialization (via HAL),
+ *         filter configuration, and starting the CAN peripheral.
+ *
+ * @retval 0 on success.
+ * @retval -1 if HAL_CAN_Init fails.
+ * @retval -2 if HAL_CAN_ConfigFilter fails.
+ * @retval -3 if HAL_CAN_Start fails.
+ * @retval -4 if HAL_CAN_DeInit fails.
  */
 int can_com_init(void);
 
