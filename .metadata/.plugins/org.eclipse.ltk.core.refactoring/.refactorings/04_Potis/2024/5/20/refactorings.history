@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename resource &apos;04_Potis/modules/potis/potis&apos; to &apos;potis.c&apos;" description="Rename resource &apos;potis&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="modules/potis/potis" name="potis.c" stamp="1715762048556" updateReferences="true"/>
-</session>
