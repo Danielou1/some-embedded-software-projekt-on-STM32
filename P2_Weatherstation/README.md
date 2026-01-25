@@ -23,4 +23,24 @@ Due to the unavailability of a second MCU for testing, the validation of the CAN
 
 The loopback test implemented in `main.c` was **fully functional**. A test message was successfully transmitted and immediately received, confirming that the software stack is behaving as expected.
 
-While this result provides confidence that the code has been implemented correctly, it does not guarantee 100% functionality in a real-world multi-node network, as it does not test the physical layer (transceiver, bus wiring). However, the software implementation is believed to be correct and ready for integration into a physical network.
+## Real-Time Operating System (FreeRTOS)
+
+### Integration
+
+To handle the complexity of concurrent sensor reading, CAN communication, and UI updates, **FreeRTOS** has been integrated into the project.
+
+- **Import Method**: Manually configured and imported as a git submodule to ensure a clean and version-controlled dependency.
+- **Cleanup**: Unused port files (e.g., for non-GCC compilers or other architectures) and example folders were removed to optimize the build process and prevent linker conflicts.
+- **Hardware Integration**: The FreeRTOS kernel is hooked into the STM32's interrupt system via `stm32f4xx_it.c`, managing `SVC`, `PendSV`, and `SysTick` handlers while maintaining compatibility with the STM32 HAL library.
+
+## Upcoming Development: Multitasking Architecture
+
+The project is now transitioning from a sequential `while(1)` loop to a priority-based multitasking architecture. The following tasks are planned:
+
+1.  **Sensor Task (Medium Priority)**: Periodically reads data (temperature, pressure, humidity) from the BME280 sensor via I2C.
+2.  **CAN Communication Task (High Priority)**: Manages the transmission of sensor data and monitors for incoming messages from other nodes.
+3.  **Display/UI Task (Low Priority)**: Updates the LCD screen with local and remote sensor data, and handles joystick input for user interaction.
+4.  **Watchdog Task**: Monitors system health and task execution.
+
+This concurrent approach will ensure that time-critical operations like CAN message handling are prioritized, while providing a responsive user interface.
+
