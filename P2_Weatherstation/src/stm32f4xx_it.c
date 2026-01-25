@@ -18,6 +18,10 @@
 /* External variables --------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan1;
 
+extern void xPortSysTickHandler(void);
+extern void xPortPendSVHandler(void);
+extern void vPortSVCHandler(void);
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
