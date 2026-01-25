@@ -1,0 +1,3 @@
+[submodule "P2_Weatherstation/FreeRTOS"]
+	path = P2_Weatherstation/FreeRTOS
+	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git

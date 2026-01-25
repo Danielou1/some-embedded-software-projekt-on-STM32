@@ -118,21 +118,22 @@ int main(void)
     HAL_Delay(500); // Wait for messages to settle on screen
 
 	/* Optional: CAN Loopback Test --------------------------------------------*/
-#if 0 // Set to 1 to re-enable the CAN loopback test, 0 for normal operation
+#if 1 // Set to 1 to re-enable the CAN loopback test, 0 for normal operation
     /*
      * This section performs a simple self-test of the CAN peripheral.
      * A message is transmitted and, because the hardware is in loopback mode,
      * it is immediately received by the same peripheral. The RX interrupt
      * callback then sets a flag to confirm success.
      */
-    lcd_draw_text_at_line("Performing CAN Test...", 8, BLACK, 2, WHITE);
+    lcd_draw_text_at_line("CAN Test...", 8, BLACK, 2, WHITE);
 
     CAN_TxHeaderTypeDef txHeader;
     uint8_t txData[] = {'T', 'E', 'S', 'T'};
     uint32_t txMailbox;
 
     txHeader.StdId = 0x123; // Test ID
-    txHeader.RTR = CAN_RTR_DATA;
+    txHeader.RTR = CAN_RTR_DATA; //remote transmission request Data
+
     txHeader.IDE = CAN_ID_STD;
     txHeader.DLC = 4; // 4 bytes of data
     txHeader.TransmitGlobalTime = DISABLE;
