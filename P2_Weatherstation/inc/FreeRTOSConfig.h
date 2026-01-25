@@ -1,8 +1,6 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-/* Assure-toi que SystemCoreClock est accessible. Si ce n'est pas le cas,
-   inclus le .h nécessaire (ex: "stm32f4xx.h") ou remplace par la valeur en dur. */
 extern uint32_t SystemCoreClock;
 
 #define configUSE_PREEMPTION                    1
@@ -12,7 +10,7 @@ extern uint32_t SystemCoreClock;
 #define configTICK_RATE_HZ                      ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES                    ( 5 )
 #define configMINIMAL_STACK_SIZE                ( ( unsigned short ) 130 )
-#define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 17 * 1024 ) )
+#define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 24 * 1024 ) )
 #define configMAX_TASK_NAME_LEN                 ( 16 )
 #define configUSE_TRACE_FACILITY                1
 #define configUSE_16_BIT_TICKS                  0
@@ -65,8 +63,8 @@ routine that makes calls to interrupt safe FreeRTOS API functions. */
 
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS
 standard names. */
-/* #define vPortSVCHandler    SVC_Handler */
-/* #define xPortPendSVHandler PendSV_Handler */
+#define vPortSVCHandler    SVC_Handler
+#define xPortPendSVHandler PendSV_Handler
 /* #define xPortSysTickHandler SysTick_Handler */
 
 #endif /* FREERTOS_CONFIG_H */

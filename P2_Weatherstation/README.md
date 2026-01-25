@@ -33,14 +33,22 @@ To handle the complexity of concurrent sensor reading, CAN communication, and UI
 - **Cleanup**: Unused port files (e.g., for non-GCC compilers or other architectures) and example folders were removed to optimize the build process and prevent linker conflicts.
 - **Hardware Integration**: The FreeRTOS kernel is hooked into the STM32's interrupt system via `stm32f4xx_it.c`, managing `SVC`, `PendSV`, and `SysTick` handlers while maintaining compatibility with the STM32 HAL library.
 
-## Upcoming Development: Multitasking Architecture
+## Project Status & Learning Process
 
-The project is now transitioning from a sequential `while(1)` loop to a priority-based multitasking architecture. The following tasks are planned:
+This project is actively being used as a learning platform for **FreeRTOS** and **Embedded Systems Architecture**. The current implementation demonstrates:
+- Concurrent task management.
+- Inter-task communication using **Queues**.
+- Safe hardware initialization sequences.
+- Transitioning from floating-point to fixed-point arithmetic for system stability.
 
-1.  **Sensor Task (Medium Priority)**: Periodically reads data (temperature, pressure, humidity) from the BME280 sensor via I2C.
-2.  **CAN Communication Task (High Priority)**: Manages the transmission of sensor data and monitors for incoming messages from other nodes.
-3.  **Display/UI Task (Low Priority)**: Updates the LCD screen with local and remote sensor data, and handles joystick input for user interaction.
-4.  **Watchdog Task**: Monitors system health and task execution.
+## Roadmap & Future Improvements
 
-This concurrent approach will ensure that time-critical operations like CAN message handling are prioritized, while providing a responsive user interface.
+To further enhance the robustness of the system and deepen the understanding of RTOS primitives, the following steps are planned:
+
+1.  **Thread Safety with Mutexes**: Currently, shared global variables (like `g_latest_weather`) are accessed with basic `volatile` qualifiers. We plan to implement **Mutexes** to ensure atomic access and prevent data corruption during UI updates.
+2.  **Resource Synchronization with Semaphores**: We intend to use **Binary or Counting Semaphores** to synchronize tasks with hardware interrupts (e.g., waking up the CAN task only when a specific hardware event occurs).
+3.  **Dynamic Task Management**: Exploring the dynamic creation and deletion of tasks based on system events or user input from the joystick.
+4.  **Watchdog Task**: Implementing a system health monitor to detect and recover from task stalls.
+
+This iterative approach allows for a solid understanding of each RTOS component before moving to more complex synchronization patterns.
 
