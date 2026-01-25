@@ -2,14 +2,8 @@
  ******************************************************************************
  * @file    main.c
  * @author  Danielou Mounsande
- * @version V1.0
- * @date    25-November-2025
- * @brief   Main program body for the P2 Weather Station project.
- *
- * @note    This project initializes the BME280 environmental sensor and the
- *          CAN bus peripheral. It is intended to read sensor data and transmit
- *          it over the CAN bus. A loopback test is included to verify the
- *          basic functionality of the CAN communication.
+ * @version V2.1
+ * @brief   Main program body for the P2 Weather Station - Debug Version.
  ******************************************************************************
  */
 
@@ -17,176 +11,148 @@
 #include "stm32f4xx.h"
 #include "env_sensor/env_sensor.h"
 #include "can_com/can_com.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 #include <stdio.h>
 #include <stdbool.h>
 
+/* Private types -------------------------------------------------------------*/
+typedef struct {
+    float temperature;
+    float pressure;
+    float humidity;
+} WeatherData_t;
+
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void vSensorTask(void *pvParameters);
+void vCanTask(void *pvParameters);
+void vUiTask(void *pvParameters);
 
 /* Global variables ----------------------------------------------------------*/
+TaskHandle_t xSensorTaskHandle = NULL;
+TaskHandle_t xCanTaskHandle    = NULL;
+TaskHandle_t xUiTaskHandle     = NULL;
+QueueHandle_t xWeatherQueue    = NULL;
 
-/**
- * @brief Global flag to indicate the success of the CAN loopback test.
- * @note  This flag is set to `true` within the CAN RX interrupt callback
- *        when the specific test message (ID 0x123) is successfully received.
- *        It is declared as `volatile` because it is modified in an ISR and
- *        read in the main loop.
- */
-volatile bool g_can_loopback_success = false;
+/* Shared data (Protected by tasks) */
+volatile WeatherData_t g_latest_weather = {0};
+volatile uint32_t g_heartbeat = 0;
 
-/**
-  * @brief  Rx Fifo 0 message pending callback in non-blocking mode.
-  * @note   This function is called by the HAL library when a new message is
-  *         received in the CAN RX FIFO 0. In this project, it is used to
-  *         catch the message sent during the loopback test.
-  * @param  hcan: Pointer to a CAN_HandleTypeDef structure that contains
-  *         the configuration information for the specified CAN.
-  * @retval None
-  */
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
-{
-    CAN_RxHeaderTypeDef rxHeader;
-    uint8_t rxData[8];
-
-    // Get the received message
-    if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, rxData) == HAL_OK)
-    {
-        // Check if the received message is the one from our loopback test
-        if (rxHeader.StdId == 0x123)
-        {
-            g_can_loopback_success = true;
-        }
-        // Future enhancement: Add logic here to process incoming sensor data
-        // from other nodes on the CAN bus.
-    }
-}
-
-
-/**
-  * @brief  The application's main entry point.
-  * @retval int
-  */
 int main(void)
 {
-	/* MCU Configuration--------------------------------------------------------*/
-
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
-
-    /* Configure the system clock to 168 MHz */
     SystemClock_Config();
 
-	/* Initialize all configured peripherals------------------------------------*/
-
-	/* 1. Initialize the LCD */
 	lcd_init();
 	lcd_fill_screen(WHITE);
-	lcd_draw_text_at_line("P2: Wetterstation", 2, BLACK, 2, WHITE);
+	lcd_draw_text_at_line("P2: RTOS Debug", 1, BLACK, 2, WHITE);
 
-	/* 2. Initialize the BME280 Environmental Sensor */
 	if (env_sensor_init() != BME280_OK)
 	{
-		lcd_draw_text_at_line("BME280 Init Failed!", 4, RED, 2, WHITE);
-		while(1);
-	}
-	else
-	{
-		lcd_draw_text_at_line("BME280 Initialized", 4, GREEN, 2, WHITE);
+		lcd_draw_text_at_line("BME280 Init Failed!", 3, RED, 2, WHITE);
+		/* Note: We don't block here to let the rest of the system run if possible */
 	}
 
-	/* 3. Initialize the CAN peripheral */
-    int can_init_status = can_com_init();
-	if (can_init_status != 0)
+    int can_res = can_com_init();
+    if (can_res != 0)
 	{
-        char error_msg[32];
-        sprintf(error_msg, "CAN Init Failed! Code: %d", can_init_status);
-		lcd_draw_text_at_line(error_msg, 6, RED, 2, WHITE);
-		while(1);
-	}
-	else
-	{
-		lcd_draw_text_at_line("CAN Initialized", 6, GREEN, 2, WHITE);
+        char err[32];
+        sprintf(err, "CAN Error: %d", can_res);
+		lcd_draw_text_at_line(err, 4, RED, 2, WHITE);
 	}
 
-    /* 4. Activate the CAN RX interrupt */
-    if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+    /* Queue Creation */
+    xWeatherQueue = xQueueCreate(5, sizeof(WeatherData_t));
+
+    if (xWeatherQueue != NULL)
     {
-        lcd_draw_text_at_line("CAN IRQ Activate Failed!", 6, RED, 2, WHITE);
-        while(1);
+        /* Increase stack size to 512 to support sprintf with floats (%f) */
+        BaseType_t r1 = xTaskCreate(vSensorTask, "Sensor", 512, NULL, 2, &xSensorTaskHandle);
+        BaseType_t r2 = xTaskCreate(vCanTask,    "CAN",    512, NULL, 3, &xCanTaskHandle);
+        BaseType_t r3 = xTaskCreate(vUiTask,     "UI",     512, NULL, 1, &xUiTaskHandle);
+
+        if (r1 != pdPASS || r2 != pdPASS || r3 != pdPASS)
+        {
+            lcd_draw_text_at_line("Task Create FAIL!", 6, RED, 2, WHITE);
+            while(1);
+        }
+
+        lcd_draw_text_at_line("Starting Scheduler...", 15, BLUE, 1, WHITE);
+        vTaskStartScheduler();
     }
 
-    HAL_Delay(500); // Wait for messages to settle on screen
-
-	/* Optional: CAN Loopback Test --------------------------------------------*/
-#if 1 // Set to 1 to re-enable the CAN loopback test, 0 for normal operation
-    /*
-     * This section performs a simple self-test of the CAN peripheral.
-     * A message is transmitted and, because the hardware is in loopback mode,
-     * it is immediately received by the same peripheral. The RX interrupt
-     * callback then sets a flag to confirm success.
-     */
-    lcd_draw_text_at_line("CAN Test...", 8, BLACK, 2, WHITE);
-
-    CAN_TxHeaderTypeDef txHeader;
-    uint8_t txData[] = {'T', 'E', 'S', 'T'};
-    uint32_t txMailbox;
-
-    txHeader.StdId = 0x123; // Test ID
-    txHeader.RTR = CAN_RTR_DATA; //remote transmission request Data
-
-    txHeader.IDE = CAN_ID_STD;
-    txHeader.DLC = 4; // 4 bytes of data
-    txHeader.TransmitGlobalTime = DISABLE;
-
-    // Send the message
-    if (HAL_CAN_AddTxMessage(&hcan1, &txHeader, txData, &txMailbox) != HAL_OK)
-    {
-        lcd_draw_text_at_line("CAN Send Failed!", 10, RED, 2, WHITE);
-    }
-
-    HAL_Delay(100); // Wait a short moment for the loopback to complete
-
-    // Check the result flag set by the ISR
-    if (g_can_loopback_success)
-    {
-        lcd_draw_text_at_line("CAN Loopback OK!", 10, GREEN, 2, WHITE);
-    }
-    else
-    {
-        lcd_draw_text_at_line("CAN Test FAILED!", 10, RED, 2, WHITE);
-    }
-
-	while(1)
-	{
-		// Loop forever after the test to display the result
-	}
-#endif
-
-    /* Clear initialization messages for normal operation */
-    lcd_draw_rect(0, 4 * 16, 240, 12 * 16, WHITE, 1);
-
-	/* Infinite loop: Main application logic ---------------------------------*/
-	while(1)
-	{
-		/*
-		 * The final application logic will be implemented here.
-		 * The intended behavior is:
-		 * 1. Read sensor data (temp, humidity, pressure) from the BME280.
-		 * 2. Pack the data into a CAN message.
-		 * 3. Send the CAN message every second.
-		 * 4. Listen for incoming CAN messages from other nodes.
-		 * 5. Use the joystick to select which node's data to display on the LCD.
-		 */
-        HAL_Delay(1000);
-	}
+	while (1);
 }
 
-/**
- * @brief  System Clock Configuration.
- * @note   This configures the system clock to 168 MHz and the APB1 clock to 42 MHz.
- *         This is crucial for the CAN baud rate calculation.
- * @retval None
- */
+void vSensorTask(void *pvParameters)
+{
+    struct bme280_data sensor_raw;
+    WeatherData_t data;
+
+    for (;;)
+    {
+        /* If hardware is not connected, this function should return an error
+           rather than looping infinitely. */
+        if (env_sensor_read_data(&sensor_raw) == BME280_OK)
+        {
+            data.temperature = (float)sensor_raw.temperature;
+            data.pressure    = (float)sensor_raw.pressure / 100.0f;
+            data.humidity    = (float)sensor_raw.humidity;
+            g_latest_weather = data;
+            xQueueSend(xWeatherQueue, &data, 0); 
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+void vCanTask(void *pvParameters)
+{
+    WeatherData_t received;
+    CAN_TxHeaderTypeDef txHeader;
+    uint8_t txData[8];
+    uint32_t txMailbox;
+
+    txHeader.StdId = 0x400;
+    txHeader.RTR   = CAN_RTR_DATA;
+    txHeader.IDE   = CAN_ID_STD;
+    txHeader.DLC   = 4;
+    txHeader.TransmitGlobalTime = DISABLE;
+
+    for (;;)
+    {
+        if (xQueueReceive(xWeatherQueue, &received, portMAX_DELAY) == pdPASS)
+        {
+            int16_t temp = (int16_t)(received.temperature * 100);
+            txData[0] = (temp >> 8) & 0xFF;
+            txData[1] = temp & 0xFF;
+            /* Real transmission (Loopback active) */
+            HAL_CAN_AddTxMessage(&hcan1, &txHeader, txData, &txMailbox);
+        }
+    }
+}
+
+void vUiTask(void *pvParameters)
+{
+    char buf[32];
+    for (;;)
+    {
+        g_heartbeat++;
+        
+        sprintf(buf, "T: %.2f C", g_latest_weather.temperature);
+        lcd_draw_text_at_line(buf, 6, BLACK, 2, WHITE);
+
+        sprintf(buf, "H: %.2f %%", g_latest_weather.humidity);
+        lcd_draw_text_at_line(buf, 8, BLACK, 2, WHITE);
+
+        sprintf(buf, "Tick: %lu", g_heartbeat);
+        lcd_draw_text_at_line(buf, 13, GREEN, 2, WHITE);
+
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
+}
+
 void SystemClock_Config(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
