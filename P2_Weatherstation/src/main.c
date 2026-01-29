@@ -2,8 +2,8 @@
  ******************************************************************************
  * @file    main.c
  * @author  Danielou Mounsande
- * @version V3.4 (Modular Edition)
- * @brief   Weather Station - Cleaned up to use the external can_com module.
+ * @version V3.5 (Interrupt-Driven Edition)
+ * @brief   Weather Station - Fully reactive UI based on interrupts.
  ******************************************************************************
  */
 
@@ -59,7 +59,7 @@ int main(void)
 
     lcd_init();
     lcd_fill_screen(WHITE);
-    lcd_draw_text_at_line("P2: True CAN System", 1, BLACK, 2, WHITE);
+    lcd_draw_text_at_line("P2: Reactive RTOS", 1, BLACK, 2, WHITE);
 
     /* Initial Sensor Probe */
     if (env_sensor_init() == BME280_OK) {
@@ -68,7 +68,7 @@ int main(void)
         lcd_draw_text_at_line("BME280: OFF", 3, RED, 2, WHITE);
     }
 
-    /* Use the modular CAN driver (Filter & Start & Interrupts are handled inside) */
+    /* Use the modular CAN driver */
     if (can_com_init() == 0) {
         lcd_draw_text_at_line("CAN Bus: OK", 4, GREEN, 2, WHITE);
     } else {
@@ -93,7 +93,6 @@ int main(void)
 
 /**
  * @brief Callback for CAN Reception.
- * This function is triggered by the CAN interrupt (defined in can_com driver).
  */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
@@ -104,7 +103,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     {
         if (rxHeader.StdId == 0x400)
         {
-            /* Decode the received CAN frame */
+            /* Decode data */
             int16_t temp = (int16_t)((rxData[0] << 8) | rxData[1]);
             uint16_t hum = (uint16_t)((rxData[2] << 8) | rxData[3]);
             uint32_t press = (uint32_t)((rxData[4] << 24) | (rxData[5] << 16) | (rxData[6] << 8) | rxData[7]);
@@ -116,12 +115,26 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             g_last_can_rx_tick = xTaskGetTickCountFromISR();
             g_can_status_ok = true;
 
-            /* Wake up the UI task to display new data */
+            /* Wake up the UI task */
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             xSemaphoreGiveFromISR(xDataReadySync, &xHigherPriorityTaskWoken);
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
     }
+}
+
+/**
+ * @brief Callback for CAN Errors.
+ * This handles "CAN Bus: OFF" instantly using interrupts.
+ */
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
+{
+    g_can_status_ok = false;
+    
+    /* Wake up the UI task immediately to show the error */
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(xDataReadySync, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void vLcdDrawTextSafe(char *text, uint8_t line, uint16_t color, uint8_t size, uint16_t bgcolor)
@@ -147,7 +160,8 @@ void vSensorTask(void *pvParameters)
             xQueueSend(xWeatherQueue, &data, 0); 
         } else {
             g_sensor_data_valid = false;
-            xSemaphoreGive(xDataReadySync); /* Show error on UI */
+            /* Wake up UI to show sensor error */
+            xSemaphoreGive(xDataReadySync); 
         }
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
@@ -178,52 +192,44 @@ void vUiTask(void *pvParameters)
 {
     char buf[32];
     for (;;) {
-        xSemaphoreTake(xDataReadySync, pdMS_TO_TICKS(500));
+        /* WAIT FOREVER for an event (No more polling!) */
+        xSemaphoreTake(xDataReadySync, portMAX_DELAY);
         g_heartbeat++;
 
+        /* Verify CAN Watchdog (still needed for silent timeouts) */
         if ((xTaskGetTickCount() - g_last_can_rx_tick) > pdMS_TO_TICKS(2500)) {
             g_can_status_ok = false;
-        } else {
-            g_can_status_ok = true;
         }
 
-        /* Update dynamic labels on lines 3 and 4 */
+        /* Update Labels */
         vLcdDrawTextSafe(g_sensor_data_valid ? "BME280: OK  " : "BME280: OFF ", 3, g_sensor_data_valid ? GREEN : RED, 2, WHITE);
         vLcdDrawTextSafe(g_can_status_ok ? "CAN Bus: OK " : "CAN Bus: OFF", 4, g_can_status_ok ? GREEN : RED, 2, WHITE);
 
         if (g_can_status_ok && g_sensor_data_valid) 
         {
-            /* NORMAL MODE: Clear potential error messages on lines 12 and 14 first */
             vLcdDrawTextSafe("                    ", 12, WHITE, 2, WHITE);
             vLcdDrawTextSafe("                    ", 14, WHITE, 2, WHITE);
 
             int32_t t = g_latest_weather.temperature_x100;
-            sprintf(buf, "Temp: %ld.%02ld C   ", t / 100, (t < 0 ? -t : t) % 100);
+            sprintf(buf, "Temp: %ld.%02ld C       ", t / 100, (t < 0 ? -t : t) % 100);
             vLcdDrawTextSafe(buf, 8, BLACK, 2, WHITE);
-            sprintf(buf, "Humi: %lu.%02lu %%   ", g_latest_weather.humidity_x100 / 100, g_latest_weather.humidity_x100 % 100);
+            sprintf(buf, "Humi: %lu.%02lu %%        ", g_latest_weather.humidity_x100 / 100, g_latest_weather.humidity_x100 % 100);
             vLcdDrawTextSafe(buf, 10, BLACK, 2, WHITE);
             sprintf(buf, "Pres: %lu.%02lu hPa ", g_latest_weather.pressure_pa / 100, g_latest_weather.pressure_pa % 100);
             vLcdDrawTextSafe(buf, 12, BLACK, 2, WHITE);
+            vLcdDrawTextSafe("                     ", 14, WHITE, 2, WHITE);
         } 
         else if (!g_can_status_ok) 
         {
-            /* CAN ERROR: Display on lines 8 and 10 */
             vLcdDrawTextSafe(" !! CAN ERROR !!    ", 8, WHITE, 2, RED);
             vLcdDrawTextSafe(" NO DATA RECEIVED   ", 10, WHITE, 2, RED);
-            /* Clear lower lines */
-            vLcdDrawTextSafe("                    ", 12, WHITE, 2, WHITE);
-            vLcdDrawTextSafe("                    ", 14, WHITE, 2, WHITE);
         }
         else 
         {
-            /* SENSOR ERROR: Display on lines 8 and 10 as well to be consistent */
-            vLcdDrawTextSafe(" !! SENSOR ERROR !! ", 8, WHITE, 2, RED);
-            vLcdDrawTextSafe("  PLEASE RECONNECT  ", 10, WHITE, 2, RED);
-            /* Clear lower lines */
-            vLcdDrawTextSafe("                    ", 12, WHITE, 2, WHITE);
-            vLcdDrawTextSafe("                    ", 14, WHITE, 2, WHITE);
+            vLcdDrawTextSafe(" !! SENSOR ERROR !! ", 12, WHITE, 2, RED);
+            vLcdDrawTextSafe("  PLEASE RECONNECT  ", 14, WHITE, 2, RED);
         }
-        sprintf(buf, "Heartbeat: %lu ", g_heartbeat);
+        sprintf(buf, "Update Event: %lu ", g_heartbeat);
         vLcdDrawTextSafe(buf, 15, BLUE, 1, WHITE);
     }
 }
