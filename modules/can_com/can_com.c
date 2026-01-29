@@ -66,6 +66,12 @@ int can_com_init(void)
         return -3; // Start failed
     }
 
+    // Activate the notification for RX FIFO 0 message pending
+    if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+    {
+        return -5; // Notification activation failed
+    }
+
     return 0; // Success
 }
 

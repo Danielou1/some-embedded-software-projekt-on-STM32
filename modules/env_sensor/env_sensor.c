@@ -2,7 +2,7 @@
  ******************************************************************************
  * @file    env_sensor.c
  * @author  Danielou Mounsande
- * @version V1.0
+ * @version V2.0
  * @date    16-November-2025
  * @brief   Implementation file for the BME280 environment sensor module.
  ******************************************************************************
