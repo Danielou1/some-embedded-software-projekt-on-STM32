@@ -1,54 +1,43 @@
-# P2: Weather Station with CAN Bus
+# P2: Weather Station with CAN Bus & FreeRTOS
 
 ## Project Overview
 
-This project is a prototype for a weather station node designed for the STM32F429I-DISC1 board. Its primary purpose is to read environmental data from a BME280 sensor (temperature, humidity, pressure) and broadcast this data over a CAN (Controller Area Network) bus.
+This project is a high-reliability weather monitoring system for the STM32F429I-DISC1 board. It integrates environmental data acquisition (BME280), industrial communication (CAN Bus), and a real-time reactive UI.
 
-The system is designed to be part of a larger network of sensor nodes. This prototype initializes the necessary peripherals (I2C for the sensor, SPI for the LCD, and CAN for communication) and includes a basic framework for the final application logic.
+The system is built on **FreeRTOS** and follows an **Event-Driven Architecture** to ensure maximum CPU efficiency and system robustness.
 
-## CAN Bus Communication
+## Version 3.6 - Industrial Implementation (Current)
 
-### Implementation
+The current version (V3.6) represents a significant architectural shift from polling to a fully reactive, interrupt-driven system.
 
-The CAN communication is handled by the `can_com` module. It initializes the `CAN1` peripheral with the following parameters:
-- **Baud Rate**: 125 kBit/s
-- **GPIO Pins**: `PB8` (RX) and `PB9` (TX)
-- **Mode**: The module is currently configured in **Loopback Mode**.
-
-### Testing and Validation
-
-A robust test of a communication protocol like CAN requires at least two separate nodes (MCUs) to verify that messages are being sent and received correctly across the physical bus.
-
-Due to the unavailability of a second MCU for testing, the validation of the CAN bus functionality was performed using the peripheral's built-in **Loopback Mode**. In this mode, the CAN peripheral treats its own transmitted messages as received messages, allowing for a complete self-test of the controller's logic (initialization, message transmission, filtering, and reception via interrupts).
-
-The loopback test implemented in `main.c` was **fully functional**. A test message was successfully transmitted and immediately received, confirming that the software stack is behaving as expected.
-
-## Real-Time Operating System (FreeRTOS)
-
-### Integration
-
-To handle the complexity of concurrent sensor reading, CAN communication, and UI updates, **FreeRTOS** has been integrated into the project.
-
-- **Import Method**: Manually configured and imported as a git submodule to ensure a clean and version-controlled dependency.
-- **Cleanup**: Unused port files (e.g., for non-GCC compilers or other architectures) and example folders were removed to optimize the build process and prevent linker conflicts.
-- **Hardware Integration**: The FreeRTOS kernel is hooked into the STM32's interrupt system via `stm32f4xx_it.c`, managing `SVC`, `PendSV`, and `SysTick` handlers while maintaining compatibility with the STM32 HAL library.
-
-## Project Status & Learning Process
-
-This project is actively being used as a learning platform for **FreeRTOS** and **Embedded Systems Architecture**. The current implementation demonstrates:
-- Concurrent task management.
-- Inter-task communication using **Queues**.
-- Safe hardware initialization sequences.
-- Transitioning from floating-point to fixed-point arithmetic for system stability.
+### Core Features
+*   **Interrupt-Driven UI**: The UI task is event-based, staying in a `Blocked` state until triggered by CAN reception or hardware errors.
+*   **Resource Protection**: Implementation of **Mutexes** for the LCD and **Binary Semaphores** for task synchronization.
+*   **Fixed-Point Arithmetic**: Optimized data processing (int32_t x100) to ensure system stability and FPU efficiency.
+*   **Modular Design**: Dedicated `can_com` driver module handling low-level hardware configuration (Filters, Interrupts, MSP).
 
 ## Roadmap & Future Improvements
 
-To further enhance the robustness of the system and deepen the understanding of RTOS primitives, the following steps are planned:
+To further evolve this prototype into a production-ready industrial sensor node, the following features are planned:
 
-1.  **Thread Safety with Mutexes**: Currently, shared global variables (like `g_latest_weather`) are accessed with basic `volatile` qualifiers. We plan to implement **Mutexes** to ensure atomic access and prevent data corruption during UI updates.
-2.  **Resource Synchronization with Semaphores**: We intend to use **Binary or Counting Semaphores** to synchronize tasks with hardware interrupts (e.g., waking up the CAN task only when a specific hardware event occurs).
-3.  **Dynamic Task Management**: Exploring the dynamic creation and deletion of tasks based on system events or user input from the joystick.
-4.  **Watchdog Task**: Implementing a system health monitor to detect and recover from task stalls.
+### 1. Physical Multi-Node Networking
+*   Transition from **Loopback Mode** to **Normal Mode**.
+*   Connect multiple STM32 nodes using physical CAN transceivers (e.g., TJA1050) to test bus arbitration and collision handling.
 
-This iterative approach allows for a solid understanding of each RTOS component before moving to more complex synchronization patterns.
+### 2. Advanced Graphics with LVGL
+*   Integrate the **LVGL (Light and Versatile Graphics Library)** to replace basic text output with professional UI elements.
+*   Implement real-time line charts to visualize temperature and pressure trends over time.
 
+### 3. Power Optimization (Tickless Idle)
+*   Implement **FreeRTOS Tickless Idle mode** combined with STM32 low-power modes (Sleep/Stop).
+*   Reduce power consumption during the 1-second interval between sensor samples.
+
+### 4. Data Logging & Storage
+*   Add an SD card module (via SPI/SDIO) to log environmental data in CSV format.
+*   Implement a FATFS file system task for long-term data storage and retrieval.
+
+### 5. Hardware Watchdog (IWDG)
+*   Add a dedicated Hardware Watchdog task to ensure the system reboots automatically in case of a catastrophic software hang, complementing the existing software CAN watchdog.
+
+---
+*This project serves as a demonstration of advanced Embedded RTOS concepts, focusing on resource protection, interrupt synchronization, and modular driver design.*
