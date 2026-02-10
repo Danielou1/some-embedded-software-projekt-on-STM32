@@ -1,3 +1,6 @@
 [submodule "P2_Weatherstation/FreeRTOS"]
 	path = P2_Weatherstation/FreeRTOS
 	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+[submodule "external/unity"]
+	path = external/unity
+	url = https://github.com/ThrowTheSwitch/Unity.git
