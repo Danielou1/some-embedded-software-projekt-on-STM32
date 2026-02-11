@@ -4,6 +4,7 @@
 [![Platform](https://img.shields.io/badge/Platform-STM32F429-orange)](https://www.st.com/en/microcontrollers-microprocessors/stm32f429-439.html)
 [![Language](https://img.shields.io/badge/Language-C_(HAL)-green)](https://www.st.com/en/embedded-software/stm32cube-mcu-mpu-packages.html)
 [![RTOS](https://img.shields.io/badge/RTOS-FreeRTOS-red)](https://www.freertos.org/)
+[![Tests](https://img.shields.io/badge/Tests-Unity-brightgreen)](https://github.com/ThrowTheSwitch/Unity)
 
 ## Introduction
 
@@ -18,6 +19,7 @@ The repository serves as a showcase of technical progression, demonstrating mast
 *   **RTOS Primitives:** Using Mutexes for resource protection and Semaphores for task synchronization to ensure thread safety.
 *   **Professional Documentation:** Full English documentation using Doxygen style, including detailed architectural explanations.
 *   **Deterministic Execution:** Use of fixed-point arithmetic and careful stack management for high-reliability applications.
+*   **Automated Unit Testing:** Utilizing the Unity framework to verify module logic independently of hardware using mocks.
 
 ---
 
@@ -47,14 +49,29 @@ The repository serves as a showcase of technical progression, demonstrating mast
 
 ---
 
+## Testing Infrastructure
+
+To ensure the reliability of the core logic, a unit testing suite has been implemented using the **Unity** framework. Tests are executed on the host machine using mocks for hardware-dependent headers (e.g., `stm32f4xx.h`).
+
+*   **Framework:** Unity Test
+*   **Location:** `/tests`
+*   **Mocks:** Hardware abstractions located in `/tests/mocks`
+*   **Execution:** 
+    *   **Windows:** Run `make` (ensure MinGW/GCC is in your PATH).
+    *   **Linux:** Run `make`. The Makefile automatically detects the OS and adjusts commands accordingly.
+
+---
+
 ## Roadmap & Future Work
 
+*   **Expand Test Coverage:** Implement unit tests for all core modules in the `/modules` directory.
 *   **LVGL Integration:** Implement the Light and Versatile Graphics Library for professional UI on project P2.
 *   **Low-Power Optimization:** Implement Tickless Idle mode and hardware sleep states.
 *   **Physical CAN Networking:** Transition from Loopback to Normal mode with multiple physical nodes.
 *   **Data Logging:** Add SD Card / FATFS support for long-term environmental data storage.
 
 ### Recent Milestones
+- [x] **Unit Testing Infrastructure:** Introduced Unity framework with hardware mocking for off-target verification.
 - [x] **RTOS Integration:** Successfully migrated P2 to a fully event-driven FreeRTOS architecture.
 - [x] **Concurrency Safety:** Implemented Mutexes and Semaphores for thread-safe resource sharing.
 - [x] **Industrial Docs:** Completed comprehensive Doxygen documentation for the entire project stack.

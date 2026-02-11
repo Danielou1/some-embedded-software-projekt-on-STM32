@@ -1,42 +1,42 @@
 #include "unity.h"
 #include "median.h"
 
-// Ces fonctions sont appelées avant et après chaque test
+// These functions are called before and after each test
 void setUp(void) {
-    // Initialisation si nécessaire
+    // Initialization if necessary
 }
 
 void tearDown(void) {
-    // Nettoyage si nécessaire
+    // Cleanup if necessary
 }
 
 void test_median_basic_filtering(void) {
-    // Le filtre a une longueur de 9 (MEDIAN_BUFFER_LENGTH)
-    // On le remplit avec des valeurs stables
+    // The filter has a length of 9 (MEDIAN_BUFFER_LENGTH)
+    // Fill the buffer with stable values
     for(int i=0; i<8; i++) {
         median_get_median(10);
     }
     
-    // On ajoute une valeur très élevée (bruit/ausreißer)
+    // Add a very high value (noise/outlier)
     uint32_t result = median_get_median(100);
     
-    // Le résultat ne devrait pas être 100, car le 100 est filtré
-    // Dans l'implémentation, il y a aussi un lissage : (4*last + 1*current)/5
-    // Donc le résultat devrait être proche de 10
+    // The result should not be 100, as the 100 is filtered
+    // In the implementation, there is also smoothing: (4*last + 1*current)/5
+    // Therefore, the result should be close to 10
     TEST_ASSERT_LESS_THAN(50, result);
     TEST_ASSERT_GREATER_THAN(5, result);
 }
 
 void test_median_sequence(void) {
-    // On teste si le filtre réagit bien à une rampe
+    // Test if the filter responds correctly to a ramp
     median_get_median(10);
     median_get_median(11);
     median_get_median(12);
     median_get_median(13);
-    uint32_t result = median_get_median(14); // 5ème élément
+    uint32_t result = median_get_median(14); // 5th element
     
-    // Comme le buffer n'est pas encore plein de 14, 
-    // et avec le lissage, la valeur doit monter doucement
+    // Since the buffer is not yet full of 14, 
+    // and with smoothing, the value should increase gradually
     TEST_ASSERT_INT_WITHIN(5, 12, result);
 }
 
