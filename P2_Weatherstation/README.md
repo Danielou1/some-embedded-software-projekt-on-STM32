@@ -40,4 +40,12 @@ To further evolve this prototype into a production-ready industrial sensor node,
 *   Add a dedicated Hardware Watchdog task to ensure the system reboots automatically in case of a catastrophic software hang, complementing the existing software CAN watchdog.
 
 ---
+
+## Connect With Me
+
+*   **LinkedIn:** [linkedin.com/in/danielou-mounsande](https://www.linkedin.com/in/danielou-mounsande)
+*   **3D Portfolio:** [danielou.netlify.app](https://danielou.netlify.app/)
+*   **Email:** [mounsandedaniel@gmail.com](mailto:mounsandedaniel@gmail.com)
+
+---
 *This project serves as a demonstration of advanced Embedded RTOS concepts, focusing on resource protection, interrupt synchronization, and modular driver design.*

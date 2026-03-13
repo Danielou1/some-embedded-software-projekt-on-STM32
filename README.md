@@ -72,6 +72,7 @@ To ensure the reliability of the core logic, a unit testing suite has been imple
 
 ### Recent Milestones
 - [x] **Unit Testing Infrastructure:** Introduced Unity framework with hardware mocking for off-target verification.
+- [x] **Module Testing:** Implemented comprehensive unit tests for `median` and `pi_controller` modules.
 - [x] **RTOS Integration:** Successfully migrated P2 to a fully event-driven FreeRTOS architecture.
 - [x] **Concurrency Safety:** Implemented Mutexes and Semaphores for thread-safe resource sharing.
 - [x] **Industrial Docs:** Completed comprehensive Doxygen documentation for the entire project stack.
