@@ -1,15 +1,39 @@
+/**
+ * @file test_median.c
+ * @author Danielou Mounsande (mounsandedaniel@gmail.com)
+ * @brief Unit tests for the median filter module using the Unity framework.
+ * @version 1.0
+ * @date 2026-03-13
+ * 
+ * @details This file contains unit tests to verify the behavior of the median filter,
+ * including basic filtering of outliers and sequence processing.
+ * 
+ * @see https://danielou.netlify.app/
+ */
+
 #include "unity.h"
 #include "median.h"
 
-// These functions are called before and after each test
+/**
+ * @brief Setup function called before each test.
+ */
 void setUp(void) {
     // Initialization if necessary
 }
 
+/**
+ * @brief Teardown function called after each test.
+ */
 void tearDown(void) {
     // Cleanup if necessary
 }
 
+/**
+ * @brief Tests the basic filtering capability of the median filter.
+ * 
+ * Verifies that a single large outlier (noise) is correctly filtered out
+ * and that the output remains within expected bounds.
+ */
 void test_median_basic_filtering(void) {
     // The filter has a length of 9 (MEDIAN_BUFFER_LENGTH)
     // Fill the buffer with stable values
@@ -27,6 +51,12 @@ void test_median_basic_filtering(void) {
     TEST_ASSERT_GREATER_THAN(5, result);
 }
 
+/**
+ * @brief Tests the response of the median filter to a sequence of values.
+ * 
+ * Verifies that the filter correctly handles a ramp of values and produces
+ * a smoothed output.
+ */
 void test_median_sequence(void) {
     // Test if the filter responds correctly to a ramp
     median_get_median(10);
@@ -40,6 +70,10 @@ void test_median_sequence(void) {
     TEST_ASSERT_INT_WITHIN(5, 12, result);
 }
 
+/**
+ * @brief Main entry point for the test suite.
+ * @return int 0 if all tests passed, non-zero otherwise.
+ */
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_median_basic_filtering);

@@ -82,7 +82,7 @@ I am an aspiring Embedded Systems Engineer focused on building robust, real-time
 
 *   **LinkedIn:** [linkedin.com/in/danielou-mounsande](https://www.linkedin.com/in/danielou-mounsande)
 *   **3D Portfolio:** [danielou.netlify.app](https://danielou.netlify.app/)
-*   **Email:** [danieloumounsande@hotmail.com](mailto:danieloumounsande@hotmail.com)
+*   **Email:** [mounsandedaniel@gmail.com](mailto:mounsandedaniel@gmail.com)
 
 ---
 *License: MIT*
