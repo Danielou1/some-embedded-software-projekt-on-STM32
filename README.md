@@ -49,6 +49,16 @@ The repository serves as a showcase of technical progression, demonstrating mast
 
 ---
 
+## Edge AI & TinyML Capability
+
+The **STM32F429** is fully capable of running optimized AI models (TinyML). Leveraging its **Cortex-M4 with FPU** (@180MHz) and **2MB Flash / 256KB RAM**, this project is evolving to include on-device intelligence.
+
+*   **X-CUBE-AI:** Integration of pre-trained models (TensorFlow Lite, Keras, ONNX) into optimized C code.
+*   **CMSIS-NN:** Utilization of ARM's highly optimized neural network kernels for Cortex-M processors.
+*   **NanoEdge AI:** Exploring anomaly detection and signal classification directly on the MCU.
+
+---
+
 ## Testing Infrastructure
 
 To ensure the reliability of the core logic, a unit testing suite has been implemented using the **Unity** framework. Tests are executed on the host machine using mocks for hardware-dependent headers (e.g., `stm32f4xx.h`).
@@ -64,18 +74,35 @@ To ensure the reliability of the core logic, a unit testing suite has been imple
 
 ## Roadmap & Future Work
 
+*   **Edge AI Integration:** Implement a TinyML model for gesture recognition or anomaly detection using **X-CUBE-AI**.
+*   **CMSIS-NN Optimization:** Refactor mathematical kernels to use DSP instructions for faster inference.
 *   **Expand Test Coverage:** Implement unit tests for all core modules in the `/modules` directory.
 *   **LVGL Integration:** Implement the Light and Versatile Graphics Library for professional UI on project P2.
 *   **Low-Power Optimization:** Implement Tickless Idle mode and hardware sleep states.
-*   **Physical CAN Networking:** Transition from Loopback to Normal mode with multiple physical nodes.
 *   **Data Logging:** Add SD Card / FATFS support for long-term environmental data storage.
 
 ### Recent Milestones
 - [x] **Unit Testing Infrastructure:** Introduced Unity framework with hardware mocking for off-target verification.
 - [x] **Module Testing:** Implemented comprehensive unit tests for `median` and `pi_controller` modules.
 - [x] **RTOS Integration:** Successfully migrated P2 to a fully event-driven FreeRTOS architecture.
-- [x] **Concurrency Safety:** Implemented Mutexes and Semaphores for thread-safe resource sharing.
 - [x] **Industrial Docs:** Completed comprehensive Doxygen documentation for the entire project stack.
+
+---
+
+## Learning Resources & Documentation
+
+To master Edge AI on STM32, I am following these key resources:
+
+### 📚 Official Documentation
+*   **[STMicroelectronics - STM32 Solutions for AI](https://www.st.com/en/embedded-software/x-cube-ai.html):** Guide for X-CUBE-AI and model conversion.
+*   **[ARM - CMSIS-NN GitHub](https://github.com/ARM-software/CMSIS-NN):** Technical details on neural network kernels for Cortex-M.
+*   **[TensorFlow Lite for Microcontrollers](https://www.tensorflow.org/lite/microcontrollers):** Documentation for the TFLite runtime on embedded devices.
+
+### 📖 Recommended Reading
+*   **TinyML:** *Machine Learning with TensorFlow Lite on Arduino and Ultra-Low-Power Microcontrollers* (Pete Warden & Daniel Situnayake).
+*   **Edge AI on STM32:** [AN5122 - How to use X-CUBE-AI](https://www.st.com/resource/en/application_note/an5122-how-to-use-the-xcubeai-expansion-pack-for-stm32cube-stmicroelectronics.pdf).
+
+---
 
 ## Connect With Me
 
